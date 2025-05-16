@@ -1,8 +1,40 @@
 import { useState } from 'react';
-import { UploadCloud } from 'lucide-react';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+
+import NewTestForm from '../components/newtest/NewTestForm';
+import TestCaseTable from '../components/newtest/TestCaseTable';
+import DownloadButtons from '../components/newtest/DownloadButtons';
+
+const mockApiResponse = {
+  "File Operations": [
+    {
+      "Test ID": "FO-001",
+      "Test Case Description": "Create a new empty document",
+      "Test Steps": "1. Launch application\n2. Select option to create new document",
+      "Expected Result": "A new empty document is created successfully",
+      "Requirement ID": "DEMO-SRS-53",
+      "Priority": "High"
+    },
+    {
+      "Test ID": "FO-002",
+      "Test Case Description": "Save changes before closing document",
+      "Test Steps": "1. Make changes to document\n2. Attempt to close document",
+      "Expected Result": "Application prompts user to save changes before closing",
+      "Requirement ID": "DEMO-SRS-54",
+      "Priority": "High"
+    }
+  ]
+};
 
 const NewTestPage = () => {
   const [selectedFile, setSelectedFile] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [testCases, setTestCases] = useState(null);
+  const [header, setHeader] = useState('Get Started');
+
+  const [testName, setTestName] = useState('');
+  const [testDescription, setTestDescription] = useState('');
 
   const handleFileChange = (e) => {
     setSelectedFile(e.target.files[0]);
@@ -10,79 +42,103 @@ const NewTestPage = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
     if (!selectedFile) {
       alert('Please upload a document.');
       return;
     }
-    // Handle file + form submission here (e.g. upload to server or API)
-    console.log('Submitting:', selectedFile);
+
+    setIsLoading(true);
+    setHeader('Generating test cases...');
+
+    // Simulate API call
+    setTimeout(() => {
+      setTestCases(mockApiResponse['File Operations']);
+      setIsLoading(false);
+      setHeader('Generated Test Cases');
+    }, 2000);
+  };
+
+  const downloadCSV = () => {
+    const headers = [
+      "Test ID",
+      "Test Case Description",
+      "Test Steps",
+      "Expected Result",
+      "Requirement ID",
+      "Priority",
+    ];
+    const rows = testCases.map((test) =>
+      headers.map((h) => `"${(test[h] || '').replace(/\n/g, ' ')}"`)
+    );
+
+    let csvContent = `Test Name:,${testName}\nDescription:,${testDescription}\n\n`;
+    csvContent += [headers.join(","), ...rows.map((row) => row.join(","))].join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", "test_cases.csv");
+    link.click();
+  };
+
+  const downloadPDF = () => {
+    const doc = new jsPDF();
+    doc.setFontSize(12);
+    doc.text(`Test Name: ${testName}`, 14, 16);
+    doc.text(`Description: ${testDescription}`, 14, 24);
+
+    autoTable(doc, {
+      startY: 30,
+      head: [
+        [
+          "Test ID",
+          "Test Case Description",
+          "Test Steps",
+          "Expected Result",
+          "Requirement ID",
+          "Priority",
+        ],
+      ],
+      body: testCases.map((test) => [
+        test["Test ID"],
+        test["Test Case Description"],
+        test["Test Steps"],
+        test["Expected Result"],
+        test["Requirement ID"],
+        test["Priority"],
+      ]),
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [52, 72, 108] },
+    });
+
+    doc.save("test_cases.pdf");
   };
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-lg mx-auto">
-      <h1 className="text-2xl font-bold mb-2">Get Started</h1>
-      <p className="text-sm text-gray-600 mb-6">
-        Enter details, upload documents, and let AI generate your test cases effortlessly.
-      </p>
+    <div className="max-w-6xl mx-auto">
+      <h1 className="text-2xl font-bold mb-2">{header}</h1>
 
-      <div className="space-y-4">
-        {/* Test Name */}
-        <div>
-          <label className="block text-sm font-medium mb-1">Test Name</label>
-          <input
-            type="text"
-            placeholder="Enter test name"
-            className="w-full border rounded px-3 py-2 text-sm"
-            required
-          />
-        </div>
-
-        {/* Description */}
-        <div>
-          <label className="block text-sm font-medium mb-1">Description</label>
-          <textarea
-            rows="4"
-            placeholder="Enter description"
-            className="w-full border rounded px-3 py-2 text-sm"
-            required
-          ></textarea>
-        </div>
-
-        {/* Upload Field */}
-        <div>
-          <label className="block text-sm font-medium mb-1">Upload Document</label>
-          <label
-            htmlFor="file-upload"
-            className="w-full border-2 border-dashed border-gray-300 rounded p-6 flex flex-col items-center text-center text-sm text-gray-500 cursor-pointer hover:bg-gray-50 transition"
-          >
-            <UploadCloud size={32} className="text-gray-400 mb-2" />
-            {selectedFile ? (
-              <span>{selectedFile.name}</span>
-            ) : (
-              <>
-                <p>Drag your file here</p>
-                <p className="text-xs text-gray-400 mt-1">(or click to select)</p>
-              </>
-            )}
-            <input
-              id="file-upload"
-              type="file"
-              onChange={handleFileChange}
-              className="hidden"
-              accept=".pdf,.doc,.docx,.txt"
-            />
-          </label>
-        </div>
-
-        {/* Submit Button */}
-        <button
-          type="submit"
-          className="mt-4 px-6 py-2 bg-blue-900 text-white text-sm rounded hover:bg-blue-800 transition"
-        >
-          Create
-        </button>
-      </div>
-    </form>
+      {isLoading ? (
+        <p className="text-gray-600 mt-4">Please wait while we generate your test cases...</p>
+      ) : testCases ? (
+        <>
+          <TestCaseTable testCases={testCases} />
+          <DownloadButtons downloadCSV={downloadCSV} downloadPDF={downloadPDF} />
+        </>
+      ) : (
+        <NewTestForm
+          testName={testName}
+          setTestName={setTestName}
+          testDescription={testDescription}
+          setTestDescription={setTestDescription}
+          selectedFile={selectedFile}
+          handleFileChange={handleFileChange}
+          handleSubmit={handleSubmit}
+        />
+      )}
+    </div>
   );
 };
 

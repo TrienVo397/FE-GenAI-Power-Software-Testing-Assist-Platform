@@ -1,6 +1,6 @@
 import { Outlet } from 'react-router-dom';
-import Sidebar from './Sidebar';
-import TopNavbar from './TopNavbar';
+import Sidebar from './Sidebar.jsx';
+import TopNavbar from './TopNavbar.jsx';
 
 const Layout = () => (
   <div className="flex h-screen bg-gray-50">
