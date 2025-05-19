@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import axios from 'axios';
 
 import NewTestForm from '../components/newtest/NewTestForm';
 import TestCaseTable from '../components/newtest/TestCaseTable';
@@ -32,15 +33,17 @@ const NewTestPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [testCases, setTestCases] = useState(null);
   const [header, setHeader] = useState('Get Started');
+  const [error, setError] = useState(null);
 
   const [testName, setTestName] = useState('');
   const [testDescription, setTestDescription] = useState('');
 
   const handleFileChange = (e) => {
     setSelectedFile(e.target.files[0]);
+    setError(null); // Clear any previous errors
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!selectedFile) {
@@ -48,15 +51,41 @@ const NewTestPage = () => {
       return;
     }
 
+    // Check if file is PDF
+    if (!selectedFile.name.toLowerCase().endsWith('.pdf')) {
+      setError('Only PDF files are supported');
+      return;
+    }
+
     setIsLoading(true);
     setHeader('Generating test cases...');
+    setError(null);
 
-    // Simulate API call
-    setTimeout(() => {
-      setTestCases(mockApiResponse['File Operations']);
-      setIsLoading(false);
+    try {
+      const formData = new FormData();
+      formData.append('file', selectedFile);
+      
+      // Add test name and description if your API accepts these
+      // formData.append('test_name', testName);
+      // formData.append('description', testDescription);
+
+      // Call the API - adjust the URL to your local server
+      const response = await axios.post('http://localhost:5000/generate-test-cases', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      // Handle successful response
+      setTestCases(response.data);
       setHeader('Generated Test Cases');
-    }, 2000);
+    } catch (error) {
+      console.error('Error generating test cases:', error);
+      setError(error.response?.data?.error || 'Failed to generate test cases. Please try again.');
+      setHeader('Error');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const downloadCSV = () => {
@@ -119,6 +148,12 @@ const NewTestPage = () => {
   return (
     <div className="max-w-6xl mx-auto">
       <h1 className="text-2xl font-bold mb-2">{header}</h1>
+
+      {error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          <p>{error}</p>
+        </div>
+      )}
 
       {isLoading ? (
         <p className="text-gray-600 mt-4">Please wait while we generate your test cases...</p>
