@@ -2,7 +2,7 @@ import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar.jsx';
 import TopNavbar from './TopNavbar.jsx';
 
-const Layout = () => (
+const AppLayout = () => (
   <div className="flex h-screen bg-gray-50">
     <Sidebar />
     <div className="flex flex-col flex-1">
@@ -14,4 +14,4 @@ const Layout = () => (
   </div>
 );
 
-export default Layout;
+export default AppLayout;

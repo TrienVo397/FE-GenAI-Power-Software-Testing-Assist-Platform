@@ -7,81 +7,38 @@ import NewTestForm from '../components/newtest/NewTestForm';
 import TestCaseTable from '../components/newtest/TestCaseTable';
 import DownloadButtons from '../components/newtest/DownloadButtons';
 
-const mockApiResponse = {
-  "File Operations": [
-    {
-      "Test ID": "FO-001",
-      "Test Case Description": "Create a new empty document",
-      "Test Steps": "1. Launch application\n2. Select option to create new document",
-      "Expected Result": "A new empty document is created successfully",
-      "Requirement ID": "DEMO-SRS-53",
-      "Priority": "High"
-    },
-    {
-      "Test ID": "FO-002",
-      "Test Case Description": "Save changes before closing document",
-      "Test Steps": "1. Make changes to document\n2. Attempt to close document",
-      "Expected Result": "Application prompts user to save changes before closing",
-      "Requirement ID": "DEMO-SRS-54",
-      "Priority": "High"
-    }
-  ]
-};
-
 const NewTestPage = () => {
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [testCases, setTestCases] = useState(null);
   const [header, setHeader] = useState('Get Started');
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [testCases, setTestCases] = useState(null);
 
-  const [testName, setTestName] = useState('');
-  const [testDescription, setTestDescription] = useState('');
+  const [submittedForm, setSubmittedForm] = useState(null); // to hold testName, testDescription, testFile
 
-  const handleFileChange = (e) => {
-    setSelectedFile(e.target.files[0]);
-    setError(null); // Clear any previous errors
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    if (!selectedFile) {
-      alert('Please upload a document.');
-      return;
-    }
-
-    // Check if file is PDF
-    if (!selectedFile.name.toLowerCase().endsWith('.pdf')) {
-      setError('Only PDF files are supported');
-      return;
-    }
+  const handleSubmit = async (formData) => {
+    const { testName, testDescription, testFile } = formData;
 
     setIsLoading(true);
     setHeader('Generating test cases...');
     setError(null);
 
     try {
-      const formData = new FormData();
-      formData.append('file', selectedFile);
-      
-      // Add test name and description if your API accepts these
-      // formData.append('test_name', testName);
-      // formData.append('description', testDescription);
+      const payload = new FormData();
+      payload.append('file', testFile);
+      // Add these if API supports
+      // payload.append('test_name', testName);
+      // payload.append('description', testDescription);
 
-      // Call the API - adjust the URL to your local server
-      const response = await axios.post('http://localhost:5000/generate-test-cases', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
+      const response = await axios.post('http://localhost:5000/generate-test-cases', payload, {
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
 
-      // Handle successful response
       setTestCases(response.data);
+      setSubmittedForm({ testName, testDescription });
       setHeader('Generated Test Cases');
-    } catch (error) {
-      console.error('Error generating test cases:', error);
-      setError(error.response?.data?.error || 'Failed to generate test cases. Please try again.');
+    } catch (err) {
+      console.error('API error:', err);
+      setError(err.response?.data?.error || 'Failed to generate test cases.');
       setHeader('Error');
     } finally {
       setIsLoading(false);
@@ -89,6 +46,7 @@ const NewTestPage = () => {
   };
 
   const downloadCSV = () => {
+    if (!submittedForm || !testCases) return;
     const headers = [
       "Test ID",
       "Test Case Description",
@@ -101,7 +59,7 @@ const NewTestPage = () => {
       headers.map((h) => `"${(test[h] || '').replace(/\n/g, ' ')}"`)
     );
 
-    let csvContent = `Test Name:,${testName}\nDescription:,${testDescription}\n\n`;
+    let csvContent = `Test Name:,${submittedForm.testName}\nDescription:,${submittedForm.testDescription}\n\n`;
     csvContent += [headers.join(","), ...rows.map((row) => row.join(","))].join("\n");
 
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
@@ -113,23 +71,22 @@ const NewTestPage = () => {
   };
 
   const downloadPDF = () => {
+    if (!submittedForm || !testCases) return;
     const doc = new jsPDF();
     doc.setFontSize(12);
-    doc.text(`Test Name: ${testName}`, 14, 16);
-    doc.text(`Description: ${testDescription}`, 14, 24);
+    doc.text(`Test Name: ${submittedForm.testName}`, 14, 16);
+    doc.text(`Description: ${submittedForm.testDescription}`, 14, 24);
 
     autoTable(doc, {
       startY: 30,
-      head: [
-        [
-          "Test ID",
-          "Test Case Description",
-          "Test Steps",
-          "Expected Result",
-          "Requirement ID",
-          "Priority",
-        ],
-      ],
+      head: [[
+        "Test ID",
+        "Test Case Description",
+        "Test Steps",
+        "Expected Result",
+        "Requirement ID",
+        "Priority",
+      ]],
       body: testCases.map((test) => [
         test["Test ID"],
         test["Test Case Description"],
@@ -163,15 +120,7 @@ const NewTestPage = () => {
           <DownloadButtons downloadCSV={downloadCSV} downloadPDF={downloadPDF} />
         </>
       ) : (
-        <NewTestForm
-          testName={testName}
-          setTestName={setTestName}
-          testDescription={testDescription}
-          setTestDescription={setTestDescription}
-          selectedFile={selectedFile}
-          handleFileChange={handleFileChange}
-          handleSubmit={handleSubmit}
-        />
+        <NewTestForm onFormSubmit={handleSubmit} />
       )}
     </div>
   );
