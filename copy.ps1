@@ -1,0 +1,1 @@
+Robocopy "D:\FE-GenAI-Power-Software-Testing-Assist-Platform" "D:\TMA\fe-skywalkers" /E /XD ".git" "node_modules"
