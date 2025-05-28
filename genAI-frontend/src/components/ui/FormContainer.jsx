@@ -21,17 +21,18 @@ const FormContainer = ({
   initialFormData = {},
   onSubmit,
   renderFieldOverride = {},
+  extraButtons = null,
+  submitLabel = "Submit",
 }) => {
   const [form, setForm] = useState(() => {
     const data = {};
     Object.entries(formSchema).forEach(([key, cfg]) => {
       data[key] =
-        initialFormData[key] ??
-        cfg.defaultValue ??
-        (cfg.type === "checkbox" ? false : "");
+        initialFormData[key] ?? cfg.defaultValue ?? (cfg.type === "checkbox" ? false : "");
     });
     return data;
   });
+
   const [errors, setErrors] = useState({});
   const [generalError, setGeneralError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -46,15 +47,14 @@ const FormContainer = ({
     e.preventDefault();
     setGeneralError("");
 
-    // validate all fields
     const newErrs = {};
     Object.entries(formSchema).forEach(([key, cfg]) => {
       const err = cfg.validate?.(form[key]);
       if (err) newErrs[key] = err;
     });
+
     if (Object.keys(newErrs).length) {
       setErrors(newErrs);
-      // setGeneralError("Please fix the errors.");
       return;
     }
 
@@ -76,14 +76,11 @@ const FormContainer = ({
     <div className="rounded-md p-6 w-full mx-auto">
       {title && <h2 className="text-2xl font-bold mb-4">{title}</h2>}
       {generalError && <div className="mb-4 text-red-500">{generalError}</div>}
+
       <form onSubmit={handleSubmit} className="space-y-6">
         {Object.entries(formSchema).map(([key, cfg]) => {
           if (renderFieldOverride[key]) {
-            return (
-              <div key={key}>
-                {renderFieldOverride[key](key, cfg, form, setForm)}
-              </div>
-            );
+            return <div key={key}>{renderFieldOverride[key](key, cfg, form, setForm)}</div>;
           }
 
           switch (cfg.type) {
@@ -130,15 +127,17 @@ const FormContainer = ({
                   type={cfg.type || "text"}
                   value={form[key]}
                   onChange={(e) => handleChange(key, e.target.value)}
-                  isInvalid={Boolean(errors[key])}
+                  isInvalid={!!errors[key]}
                   helperText={errors[key]}
                 />
               );
           }
         })}
-        <div className="flex justify-end pt-4">
+
+        <div className="flex justify-end items-center gap-4 pt-4">
+          {extraButtons}
           <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "Saving..." : "Save"}
+            {isSubmitting ? "Saving..." : submitLabel}
           </Button>
         </div>
       </form>

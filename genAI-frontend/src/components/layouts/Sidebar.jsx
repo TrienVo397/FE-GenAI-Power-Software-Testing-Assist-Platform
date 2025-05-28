@@ -7,8 +7,8 @@ const Sidebar = () => {
 
   const getActiveClass = ({ isActive }) =>
     isActive
-      ? `${linkClass} bg-gray-100 text-[#0d1c1e]`
-      : `${linkClass} text-[#f3faf1] hover:bg-gray-100 hover:text-black`;
+      ? `${linkClass} bg-[#f3faf1] text-[#0d1c1e]`
+      : `${linkClass} text-[#f3faf1] hover:bg-[#f3faf1] hover:text-black`;
 
   return (
     <aside className="w-56 bg-[#0d1c1e] h-screen shadow-sm flex flex-col">

@@ -6,7 +6,7 @@ const HomePage = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 max-w-[90%] mx-auto">
       <h1 className="text-2xl font-bold">Welcome Back, [User Name]!</h1>
 
       <section>

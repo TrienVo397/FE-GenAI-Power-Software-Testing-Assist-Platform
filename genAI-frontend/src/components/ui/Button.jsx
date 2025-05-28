@@ -18,7 +18,7 @@ export function Button({
 
   const variantStyles = {
     default: "bg-[#24416d] text-white hover:bg-[#1e325a]",
-    secondary: "bg-white text-black border border-gray-300 hover:bg-gray-100",
+    secondary: "bg-gray-200 text-black border border-gray-300 hover:bg-gray-100",
     destructive: "bg-red-600 text-white hover:bg-red-700",
     warning: "bg-yellow-400 text-black hover:bg-yellow-500",
     // outline: "border border-input hover:bg-gray-100 hover:text-black",
