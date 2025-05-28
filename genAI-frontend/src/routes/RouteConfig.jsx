@@ -4,6 +4,8 @@ import HomePage from '../pages/HomePage';
 import NewTestPage from '../pages/NewTestPage';
 import AllTestsPage from '../pages/AllTestsPage';
 import ProfilePage from '../pages/ProfilePage';
+import LoginPage from '../pages/LoginPage.jsx';
+import SignUpPage from '../pages/SignUpPage.jsx';
 
 const RouteConfig = () => {
   return (
@@ -13,6 +15,8 @@ const RouteConfig = () => {
         <Route path="new-test" element={<NewTestPage />} />
         <Route path="all-tests" element={<AllTestsPage />} />
         <Route path="profile" element={<ProfilePage />} />
+        {/* <Route path="login" element={<LoginPage />} />
+        <Route path="signup" element={<SignUpPage />} /> */}
       </Route>
     </Routes>
   );

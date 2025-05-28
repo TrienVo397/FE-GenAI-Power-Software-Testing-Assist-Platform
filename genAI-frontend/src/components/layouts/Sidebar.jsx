@@ -1,9 +1,9 @@
-import { NavLink } from 'react-router-dom';
-import { Home, PlusCircle, List, User } from 'lucide-react';
+import { NavLink } from "react-router-dom";
+import { Home, PlusCircle, List, User } from "lucide-react";
 
 const Sidebar = () => {
   const linkClass =
-    'flex items-center gap-2 px-3 py-2 rounded text-sm font-medium transition';
+    "flex items-center gap-2 px-3 py-2 rounded text-sm font-medium transition";
 
   const getActiveClass = ({ isActive }) =>
     isActive
@@ -30,6 +30,7 @@ const Sidebar = () => {
               <PlusCircle size={16} />
               <span>New Test</span>
             </NavLink>
+
             <NavLink to="/all-tests" className={getActiveClass}>
               <List size={16} />
               <span>All Tests</span>
@@ -44,6 +45,16 @@ const Sidebar = () => {
             <User size={16} />
             <span>Profile</span>
           </NavLink>
+
+          {/* <NavLink to="/login" className={getActiveClass}>
+            <User size={16} />
+            <span>Login</span>
+          </NavLink>
+
+          <NavLink to="/signup" className={getActiveClass}>
+            <User size={16} />
+            <span>Sign Up</span>
+          </NavLink> */}
         </div>
       </nav>
     </aside>
