@@ -21,7 +21,7 @@ const NewTestForm = ({ onFormSubmit }) => {
       required: true,
       validate: (file) => {
         if (!file) return "Please upload a file.";
-        if (!file.name.toLowerCase().endsWith('.pdf')) return "Only PDF files are supported.";
+        // if (!file.name.toLowerCase().endsWith('.pdf')) return "Only PDF files are supported.";
         return null;
       },
     },

@@ -25,7 +25,10 @@ const FormContainer = ({
   const [form, setForm] = useState(() => {
     const data = {};
     Object.entries(formSchema).forEach(([key, cfg]) => {
-      data[key] = initialFormData[key] ?? cfg.defaultValue ?? (cfg.type === "checkbox" ? false : "");
+      data[key] =
+        initialFormData[key] ??
+        cfg.defaultValue ??
+        (cfg.type === "checkbox" ? false : "");
     });
     return data;
   });
@@ -111,10 +114,11 @@ const FormContainer = ({
             case "upload":
               return (
                 <UploadFile
-                  key={key}
                   label={cfg.label}
                   maxSizeMB={cfg.maxSizeMB}
                   onUpload={(file) => handleChange(key, file)}
+                  isInvalid={!!errors[key]}
+                  helperText={errors[key]}
                 />
               );
             default:

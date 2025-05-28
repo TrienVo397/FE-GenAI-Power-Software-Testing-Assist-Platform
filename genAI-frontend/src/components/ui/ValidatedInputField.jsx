@@ -35,7 +35,7 @@ const ValidatedInputField = ({
         `}
       />
       {isInvalid && helperText && (
-        <p className="text-sm text-red-600">❌ {helperText}</p>
+        <p className="text-sm text-red-600">{helperText}</p>
       )}
     </div>
   );
