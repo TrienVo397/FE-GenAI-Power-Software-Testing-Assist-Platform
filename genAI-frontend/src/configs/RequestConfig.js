@@ -3,9 +3,12 @@ import axios from "axios";
 // Global config (if needed for interceptors)
 const instance = axios.create({
   baseURL: "https://localhost:5000/api",
+  // headers: {
+  //   "Content-Type":
+  //     data instanceof FormData ? "multipart/form-data" : "application/json",
+  // },
   headers: {
-    "Content-Type":
-      data instanceof FormData ? "multipart/form-data" : "application/json",
+    "Content-Type": "application/json",
   },
   withCredentials: true,
 });
