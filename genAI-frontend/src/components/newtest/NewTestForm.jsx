@@ -1,4 +1,4 @@
-import FormContainer from '../ui/FormContainer';
+import FormContainer from "../ui/FormContainer";
 
 const NewTestForm = ({ onFormSubmit }) => {
   const formSchema = {
@@ -6,13 +6,23 @@ const NewTestForm = ({ onFormSubmit }) => {
       label: "Test Name",
       type: "text",
       required: true,
-      validate: (val) => (!val ? "Test name is required." : null),
+      validate: (val) => {
+        if (!val) return "Test name is required.";
+        if (val.length > 20)
+          return "Test name must be 20 characters or fewer.";
+        return null;
+      },
     },
     testDescription: {
       label: "Description",
       type: "text",
       required: true,
-      validate: (val) => (!val ? "Description is required." : null),
+      validate: (val) => {
+        if (!val) return "Description is required.";
+        if (val.length > 100)
+          return "Description must be 100 characters or fewer.";
+        return null;
+      },
     },
     testFile: {
       label: "Upload Document",

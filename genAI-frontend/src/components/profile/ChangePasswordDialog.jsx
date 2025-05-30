@@ -11,12 +11,13 @@ const passwordSchema = {
     label: "New Password",
     type: "password",
     required: true,
-    validate: (val) =>
-      !val
-        ? "Enter a new password."
-        : val.length < 6
-        ? "Password must be at least 6 characters."
-        : null,
+    validate: (val) => {
+      if (!val) return "Password is required.";
+      const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$/;
+      return passwordRegex.test(val)
+        ? null
+        : "Password must be at least 8 characters and include letters, numbers, and symbols.";
+    },
   },
   confirmPassword: {
     label: "Confirm New Password",

@@ -7,7 +7,13 @@ const LoginForm = ({ onSubmit }) => {
       label: "Email Address",
       type: "email",
       required: true,
-      validate: (val) => (!val ? "Email is required." : null),
+      validate: (val) => {
+        if (!val) return "Email is required.";
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(val)
+          ? null
+          : "Please enter a valid email address.";
+      },
     },
     password: {
       label: "Password",

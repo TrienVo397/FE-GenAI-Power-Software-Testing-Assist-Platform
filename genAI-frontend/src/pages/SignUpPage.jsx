@@ -6,7 +6,7 @@ const SignUpPage = () => {
 
   const handleSubmit = (formData) => {
     console.log("Sign up data:", formData);
-    // Call API, then redirect
+    // TODO - Call API, then redirect
     navigate("/login");
   };
 

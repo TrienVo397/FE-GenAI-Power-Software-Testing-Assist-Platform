@@ -7,7 +7,7 @@ const LoginPage = () => {
 
   const handleSubmit = async (data) => {
     console.log("Login payload:", data);
-    // Call API, then redirect
+    // TODO - Call API, then redirect
     navigate("/");
   };
 

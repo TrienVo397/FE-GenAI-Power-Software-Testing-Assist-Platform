@@ -6,19 +6,35 @@ const profileSchema = {
     label: "First Name",
     type: "text",
     required: true,
-    validate: (val) => (!val ? "First name is required." : null),
+    validate: (val) => {
+      if (!val) return "First name is required.";
+      const nameRegex = /^[A-Za-z\s'-]+$/;
+      return nameRegex.test(val)
+        ? null
+        : "First name can only contain letters, spaces, dashes, and apostrophes.";
+    },
   },
   lastName: {
     label: "Last Name",
     type: "text",
     required: true,
-    validate: (val) => (!val ? "Last name is required." : null),
+    validate: (val) => {
+      if (!val) return "Last name is required.";
+      const nameRegex = /^[A-Za-z\s'-]+$/;
+      return nameRegex.test(val)
+        ? null
+        : "Last name can only contain letters, spaces, dashes, and apostrophes.";
+    },
   },
   username: {
     label: "Username",
     type: "text",
     required: true,
-    validate: (val) => (!val ? "Username is required." : null),
+    validate: (val) => {
+      if (!val) return "Username is required.";
+      if (/\s/.test(val)) return "Username must not contain spaces.";
+      return null;
+    },
   },
 };
 
@@ -31,11 +47,7 @@ const ProfileForm = ({ initialData, onSubmit, onChangePassword }) => {
       onSubmit={onSubmit}
       submitLabel="Save Changes"
       extraButtons={
-        <Button
-          type="button"
-          variant="secondary"
-          onClick={onChangePassword}
-        >
+        <Button type="button" variant="secondary" onClick={onChangePassword}>
           Change Password
         </Button>
       }
