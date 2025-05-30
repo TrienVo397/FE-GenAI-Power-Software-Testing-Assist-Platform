@@ -1,12 +1,10 @@
-import axios from "axios";
+import { TEST_CASE_SERVICE_URL } from "../../../configs/UrlConfig";
+import { sendHttpRequest } from "../../../configs/RequestConfig";
 
 export const generateTestCases = async (file) => {
-  const payload = new FormData();
-  payload.append("file", file);
+  const formData = new FormData();
+  formData.append("file", file);
 
-  const response = await axios.post("http://localhost:5000/generate-test-cases", payload, {
-    headers: { "Content-Type": "multipart/form-data" },
-  });
-
-  return response.data;
+  const result = await sendHttpRequest(`${TEST_CASE_SERVICE_URL}/generate-test-cases`, "POST", formData);
+  return result.json;
 };
