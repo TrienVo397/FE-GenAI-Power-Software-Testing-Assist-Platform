@@ -1,36 +1,50 @@
-import { useNavigate } from "react-router-dom";
-
-const mockProjects = [
-  { id: 1, name: "GenAI Test Assist" },
-  { id: 2, name: "QA Dashboard" },
-  { id: 3, name: "ML Dataset Validator" },
-];
+import { useRef, useState } from "react";
+import ProjectListSection from "../components/project/ProjectListSection";
+import ProjectDialog from "../components/project/ProjectDialog";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardFooter,
+} from "../components/ui/Card";
+import ProjectTopActions from "../components/project/ProjectTopActions";
 
 const ProjectsPage = ({ onProjectSelect }) => {
-  const navigate = useNavigate();
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const sectionRef = useRef();
 
-  const handleSelect = (project) => {
-    // TODO: Replace with actual API selection in future
-    localStorage.setItem("mockProject", JSON.stringify(project));
-    if (onProjectSelect) onProjectSelect();
-    navigate("/");
+  const handleCreate = async (projectData) => {
+    // TODO: Replace with API call
+    const newProject = { id: Date.now(), ...projectData };
+    sectionRef.current?.addProject(newProject);
+    setIsDialogOpen(false);
   };
 
   return (
-    <div className="max-w-lg mx-auto py-16 px-4">
-      <h2 className="text-2xl font-bold mb-6 text-center text-[#2b416a]">Select a Project</h2>
-      <ul className="space-y-4">
-        {mockProjects.map((project) => (
-          <li
-            key={project.id}
-            className="border p-4 rounded-md shadow hover:bg-gray-100 cursor-pointer"
-            onClick={() => handleSelect(project)}
-          >
-            {project.name}
-          </li>
-        ))}
-      </ul>
-    </div>
+    <Card className="max-w-[60%] mx-auto">
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <CardTitle>Project Management</CardTitle>
+          <ProjectTopActions onAddClick={() => setIsDialogOpen(true)} />
+        </div>
+      </CardHeader>
+
+      <CardContent>
+        <ProjectListSection ref={sectionRef} onProjectSelect={onProjectSelect} />
+      </CardContent>
+
+      {isDialogOpen && (
+        <ProjectDialog
+          open={true}
+          initialProject={{}}
+          onSave={handleCreate}
+          onClose={() => setIsDialogOpen(false)}
+        />
+      )}
+
+      <CardFooter />
+    </Card>
   );
 };
 

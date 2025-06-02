@@ -54,7 +54,7 @@ const FormDialog = ({
     });
     if (Object.keys(newErrs).length) {
       setErrors(newErrs);
-      setGeneralError('Please fix the errors.');
+      // setGeneralError('Please fix the errors.');
       return;
     }
 

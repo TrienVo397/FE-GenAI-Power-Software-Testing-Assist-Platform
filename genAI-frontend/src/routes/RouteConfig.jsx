@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
+
 import AppLayout from "../components/layouts/AppLayout.jsx";
 import HomePage from "../pages/HomePage";
 import NewTestPage from "../pages/NewTestPage";
@@ -13,7 +14,7 @@ const RouteConfig = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem("mockUser"));
   const [selectedProject, setSelectedProject] = useState(localStorage.getItem("mockProject"));
 
-  // Listen for localStorage changes from login/project selection/logout
+  // Keep state in sync with localStorage
   useEffect(() => {
     const syncState = () => {
       setIsAuthenticated(!!localStorage.getItem("mockUser"));
@@ -21,46 +22,74 @@ const RouteConfig = () => {
     };
 
     window.addEventListener("storage", syncState);
-    return () => window.removeEventListener("storage", syncState);
-  }, []);
+    const interval = setInterval(syncState, 300);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setIsAuthenticated(!!localStorage.getItem("mockUser"));
-      setSelectedProject(localStorage.getItem("mockProject"));
-    }, 300);
-    return () => clearInterval(interval);
+    return () => {
+      window.removeEventListener("storage", syncState);
+      clearInterval(interval);
+    };
   }, []);
 
   return (
     <Routes>
+      {/* 🔐 NOT AUTHENTICATED */}
       {!isAuthenticated ? (
         <>
           <Route path="/login" element={<LoginPage onLogin={() => setIsAuthenticated(true)} />} />
+          <Route path="/signup" element={<SignUpPage />} />
           <Route path="*" element={<Navigate to="/login" replace />} />
-        </>
-      ) : !selectedProject ? (
-        <>
-          <Route
-            path="/projects"
-            element={<ProjectsPage onProjectSelect={() => setSelectedProject(localStorage.getItem("mockProject"))} />}
-          />
-          <Route path="*" element={<Navigate to="/projects" replace />} />
         </>
       ) : (
         <>
-          <Route element={<AppLayout onLogout={() => {
-            localStorage.removeItem("mockUser");
-            localStorage.removeItem("mockProject");
-            setIsAuthenticated(false);
-            setSelectedProject(null);
-          }} />}>
-            <Route index element={<HomePage />} />
-            <Route path="new-test" element={<NewTestPage />} />
-            <Route path="all-tests" element={<AllTestsPage />} />
-            <Route path="profile" element={<ProfilePage />} />
-          </Route>
-          <Route path="/login" element={<Navigate to="/" replace />} />
+          {/* 📁 PROJECT NOT SELECTED */}
+          {!selectedProject ? (
+            <>
+              <Route
+                path="/projects"
+                element={
+                  <ProjectsPage
+                    onProjectSelect={() => setSelectedProject(localStorage.getItem("mockProject"))}
+                  />
+                }
+              />
+              <Route path="*" element={<Navigate to="/projects" replace />} />
+            </>
+          ) : (
+            <>
+              {/* ✅ PROJECT SELECTED */}
+              <Route
+                element={
+                  <AppLayout
+                    onLogout={() => {
+                      localStorage.removeItem("mockUser");
+                      localStorage.removeItem("mockProject");
+                      setIsAuthenticated(false);
+                      setSelectedProject(null);
+                    }}
+                  />
+                }
+              >
+                <Route index element={<HomePage />} />
+                <Route path="new-test" element={<NewTestPage />} />
+                <Route path="all-tests" element={<AllTestsPage />} />
+                <Route path="profile" element={<ProfilePage />} />
+              </Route>
+
+              {/* 👈 Allow visiting /projects again even after selecting */}
+              <Route
+                path="/projects"
+                element={
+                  <ProjectsPage
+                    onProjectSelect={() => setSelectedProject(localStorage.getItem("mockProject"))}
+                  />
+                }
+              />
+
+              {/* Optional: redirect /login and /signup to homepage if already logged in */}
+              <Route path="/login" element={<Navigate to="/" replace />} />
+              <Route path="/signup" element={<Navigate to="/" replace />} />
+            </>
+          )}
         </>
       )}
     </Routes>
