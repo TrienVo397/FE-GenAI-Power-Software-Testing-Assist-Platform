@@ -7,7 +7,6 @@ import {
   TableRow,
   TableCell,
 } from "../ui/Table";
-import { Button } from "../ui";
 import { Trash2, Edit2, EllipsisIcon } from "lucide-react";
 
 const ProjectTable = ({ projects, onEdit, onDelete, onSelect }) => {
@@ -16,6 +15,14 @@ const ProjectTable = ({ projects, onEdit, onDelete, onSelect }) => {
   const toggleMenu = (id) => {
     setOpenMenuId((prev) => (prev === id ? null : id));
   };
+
+  if (!projects || projects.length === 0) {
+    return (
+      <div className="text-center py-8 text-gray-500">
+        No projects found. Click the "Add Project" button to create one.
+      </div>
+    );
+  }
 
   return (
     <Table className="overflow-x-hidden">
@@ -27,12 +34,10 @@ const ProjectTable = ({ projects, onEdit, onDelete, onSelect }) => {
       </TableHeader> */}
       <TableBody>
         {projects.map((project) => (
-          <TableRow key={project.id} className="cursor-pointer text-blue-600 hover:bg-blue-100 transition duration-200 ease-in-out">
-            <TableCell
+          <TableRow key={project.id} className="cursor-pointer text-blue-600 hover:bg-blue-100 transition duration-200 ease-in-out">            <TableCell
               className="cursor-pointer text-black font-medium rounded-l-lg"
               onClick={() => {
-                localStorage.setItem("mockProject", JSON.stringify(project));
-                onSelect?.();
+                onSelect?.(project);
               }}
             >
               {project.name}

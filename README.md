@@ -1,12 +1,87 @@
-# React + Vite
+# GenAI Power Software Testing Assistant Platform
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A React-based frontend for a generative AI software testing assistant platform.
 
-Currently, two official plugins are available:
+## Environment Configuration
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+The application uses environment variables for configuration. Create a `.env` file in the root directory with the following variables:
 
-## Expanding the ESLint configuration
+```
+# API Configuration
+VITE_API_BASE_URL=https://localhost:5000
+VITE_API_TIMEOUT=30000
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+# Authentication
+VITE_AUTH_TOKEN_KEY=auth_token
+VITE_AUTH_USER_KEY=user_info
+
+# Feature Flags
+VITE_ENABLE_GOOGLE_LOGIN=true
+```
+
+You can copy the `.env.example` file to create your own `.env` file:
+
+```bash
+cp .env.example .env
+```
+
+## Development
+
+### Installation
+
+```bash
+npm install
+```
+
+### Running the Development Server
+
+```bash
+npm run dev
+```
+
+### Building for Production
+
+```bash
+npm run build
+```
+
+### Preview Production Build
+
+```bash
+npm run preview
+```
+
+## Framework
+
+This project uses:
+
+- React + Vite
+- TailwindCSS for styling
+- React Router for navigation
+- Axios for API requests
+
+## Import Path Aliases
+
+This project uses path aliases to simplify imports. Instead of using relative paths like `../../components/Button`, you can use aliases:
+
+```jsx
+// Instead of this
+import Button from "../../../components/ui/Button";
+import { FEATURES } from "../../../configs/EnvConfig";
+
+// Use this
+import Button from "@@/components/ui/Button";
+import { FEATURES } from "@@/configs/EnvConfig";
+```
+
+Available aliases:
+- `@@/` - Points to the `src` directory
+
+## Authentication
+
+The application uses JWT-based authentication with:
+
+- Username/password login
+- Google OAuth login (optional)
+- Token refresh mechanism
+- Secure token storage

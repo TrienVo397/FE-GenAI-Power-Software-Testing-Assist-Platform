@@ -1,18 +1,16 @@
 import FormContainer from "../ui/FormContainer";
 import CheckBox from "../ui/CheckBox";
 
-const LoginForm = ({ onSubmit }) => {
+const LoginForm = ({ onSubmit, isLoading }) => {
   const formSchema = {
-    email: {
-      label: "Email Address",
-      type: "email",
+    username: {
+      label: "Username",
+      type: "text",
       required: true,
       validate: (val) => {
-        if (!val) return "Email is required.";
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return emailRegex.test(val)
-          ? null
-          : "Please enter a valid email address.";
+        if (!val) return "Username is required.";
+        if (/\s/.test(val)) return "Username must not contain spaces.";
+        return null;
       },
     },
     password: {
@@ -27,13 +25,13 @@ const LoginForm = ({ onSubmit }) => {
       defaultValue: false,
     },
   };
-
   return (
     <FormContainer
       formSchema={formSchema}
-      initialFormData={{ email: "", password: "", remember: false }}
+      initialFormData={{ username: "", password: "", remember: false }}
       onSubmit={onSubmit}
       submitLabel="Login"
+      isSubmitting={isLoading}
       renderFieldOverride={{
         remember: (key, cfg, form, setForm) => (
           <CheckBox

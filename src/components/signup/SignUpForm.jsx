@@ -1,7 +1,7 @@
 import FormContainer from "../ui/FormContainer";
 import CheckBox from "../ui/CheckBox";
 
-const SignUpForm = ({ onSubmit }) => {
+const SignUpForm = ({ onSubmit, isLoading }) => {
   const formSchema = {
     firstName: {
       label: "First Name",
@@ -95,6 +95,7 @@ const SignUpForm = ({ onSubmit }) => {
       }}
       onSubmit={onSubmit}
       submitLabel="Sign Up"
+      isSubmitting={isLoading}
       renderFieldOverride={{
         agree: (key, cfg, form, setForm) => (
           <CheckBox

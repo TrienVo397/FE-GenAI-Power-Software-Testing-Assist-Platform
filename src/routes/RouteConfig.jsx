@@ -1,5 +1,8 @@
+// filepath: c:\Users\dorem\Documents\GitHub\FE-GenAI-Power-Software-Testing-Assist-Platform\src\routes\RouteConfig.jsx
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { isAuthenticated, logout } from "../services/authService";
+import _ from "lodash";
 
 import AppLayout from "../components/layouts/AppLayout.jsx";
 import HomePage from "../pages/HomePage";
@@ -11,31 +14,71 @@ import SignUpPage from "../pages/SignUpPage.jsx";
 import ProjectsPage from "../pages/ProjectsPage.jsx";
 
 const RouteConfig = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem("mockUser"));
-  const [selectedProject, setSelectedProject] = useState(localStorage.getItem("mockProject"));
+  const [authenticated, setAuthenticated] = useState(isAuthenticated());
+  
+  // Handle both string ID and JSON object formats for backward compatibility
+  const initializeSelectedProject = () => {
+    const storedProject = localStorage.getItem("mockProject");
+    if (!storedProject) return null;
+    
+    // Use lodash's attempt to safely try parsing JSON
+    const parsed = _.attempt(JSON.parse, storedProject);
+    
+    // If parsing succeeded and it's an object with an id property, use that
+    if (!_.isError(parsed) && _.has(parsed, 'id')) {
+      return parsed.id;
+    }
+    
+    // Otherwise, return the original string or the parsed value
+    return _.isError(parsed) ? storedProject : parsed;
+  };
+  
+  const [selectedProject, setSelectedProject] = useState(initializeSelectedProject());
+  const navigate = useNavigate();
 
-  // Keep state in sync with localStorage
+  // Keep auth state in sync
   useEffect(() => {
-    const syncState = () => {
-      setIsAuthenticated(!!localStorage.getItem("mockUser"));
-      setSelectedProject(localStorage.getItem("mockProject"));
+    const checkAuth = () => {
+      setAuthenticated(isAuthenticated());
+      setSelectedProject(initializeSelectedProject());
     };
 
-    window.addEventListener("storage", syncState);
-    const interval = setInterval(syncState, 300);
+    window.addEventListener("storage", checkAuth);
+    const interval = setInterval(checkAuth, 300);
 
     return () => {
-      window.removeEventListener("storage", syncState);
+      window.removeEventListener("storage", checkAuth);
       clearInterval(interval);
     };
   }, []);
+  
+  const handleLogout = async () => {
+    await logout();
+    setAuthenticated(false);
+    setSelectedProject(null);
+    navigate("/login");
+  };  // Handle project selection - extract ID from project data
+  const handleProjectSelect = (project) => {
+    console.log("Project selected:", project); // Debug log
+    
+    // Get project ID directly from the localStorage
+    const storedProjectId = localStorage.getItem("mockProject");
+    console.log("Project ID from localStorage:", storedProjectId);
+    
+    // Update the selected project state
+    setSelectedProject(storedProjectId);
+    
+    // Redirect to homepage/dashboard after selection
+    console.log("Navigating to homepage");
+    navigate("/");
+  };
 
   return (
     <Routes>
       {/* 🔐 NOT AUTHENTICATED */}
-      {!isAuthenticated ? (
+      {!authenticated ? (
         <>
-          <Route path="/login" element={<LoginPage onLogin={() => setIsAuthenticated(true)} />} />
+          <Route path="/login" element={<LoginPage onLogin={() => setAuthenticated(true)} />} />
           <Route path="/signup" element={<SignUpPage />} />
           <Route path="*" element={<Navigate to="/login" replace />} />
         </>
@@ -46,30 +89,16 @@ const RouteConfig = () => {
             <>
               <Route
                 path="/projects"
-                element={
-                  <ProjectsPage
-                    onProjectSelect={() => setSelectedProject(localStorage.getItem("mockProject"))}
-                  />
-                }
+                element={<ProjectsPage onProjectSelect={handleProjectSelect} />}
               />
               <Route path="*" element={<Navigate to="/projects" replace />} />
             </>
           ) : (
             <>
               {/* ✅ PROJECT SELECTED */}
-              <Route
-                element={
-                  <AppLayout
-                    onLogout={() => {
-                      localStorage.removeItem("mockUser");
-                      localStorage.removeItem("mockProject");
-                      setIsAuthenticated(false);
-                      setSelectedProject(null);
-                    }}
-                  />
-                }
-              >
+              <Route element={<AppLayout onLogout={handleLogout} />}>
                 <Route index element={<HomePage />} />
+                <Route path="dashboard" element={<HomePage />} />
                 <Route path="new-test" element={<NewTestPage />} />
                 <Route path="all-tests" element={<AllTestsPage />} />
                 <Route path="profile" element={<ProfilePage />} />
@@ -78,11 +107,7 @@ const RouteConfig = () => {
               {/* 👈 Allow visiting /projects again even after selecting */}
               <Route
                 path="/projects"
-                element={
-                  <ProjectsPage
-                    onProjectSelect={() => setSelectedProject(localStorage.getItem("mockProject"))}
-                  />
-                }
+                element={<ProjectsPage onProjectSelect={handleProjectSelect} />}
               />
 
               {/* Optional: redirect /login and /signup to homepage if already logged in */}

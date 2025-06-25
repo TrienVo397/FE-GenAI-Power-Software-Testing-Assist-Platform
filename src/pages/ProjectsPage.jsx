@@ -9,16 +9,23 @@ import {
   CardFooter,
 } from "../components/ui/Card";
 import ProjectTopActions from "../components/project/ProjectTopActions";
+import { createProject } from "../services/projectService";
+import _ from "lodash";
 
-const ProjectsPage = ({ onProjectSelect }) => {
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+const ProjectsPage = ({ onProjectSelect }) => {  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const sectionRef = useRef();
+  
+  // Handle project selection and navigation  // Empty line (removing the unused function)
 
   const handleCreate = async (projectData) => {
-    // TODO: Replace with API call
-    const newProject = { id: Date.now(), ...projectData };
-    sectionRef.current?.addProject(newProject);
-    setIsDialogOpen(false);
+    try {
+      const newProject = await createProject(projectData);
+      sectionRef.current?.addProject(newProject);
+      setIsDialogOpen(false);
+    } catch (error) {
+      console.error("Failed to create project:", error);
+      alert("Failed to create project. Please try again.");
+    }
   };
 
   return (
@@ -28,10 +35,29 @@ const ProjectsPage = ({ onProjectSelect }) => {
           <CardTitle>Project Management</CardTitle>
           <ProjectTopActions onAddClick={() => setIsDialogOpen(true)} />
         </div>
-      </CardHeader>
-
-      <CardContent>
-        <ProjectListSection ref={sectionRef} onProjectSelect={onProjectSelect} />
+      </CardHeader>      <CardContent>
+        <ProjectListSection 
+          ref={sectionRef}          onProjectSelect={(project) => {
+            // Log project selection
+            console.log("Project selected in ProjectsPage:", project);
+            
+            // Store project ID and directly navigate
+            const projectId = _.get(project, 'id', '');
+            localStorage.setItem("mockProject", projectId);
+            console.log("Set localStorage mockProject to:", projectId);
+            
+            // Force navigation after a brief delay to ensure localStorage is set
+            _.delay(() => {
+              console.log("Navigating to homepage from ProjectsPage");
+              window.location.href = "/"; // Use direct location change for harder redirect
+            }, 50);
+            
+            // Also call parent handler for state updates
+            if (onProjectSelect) {
+              onProjectSelect(project);
+            }
+          }}
+        />
       </CardContent>
 
       {isDialogOpen && (

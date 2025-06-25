@@ -13,8 +13,7 @@ const HomePage = () => {
         <h2 className="text-xl font-semibold mb-1">Get Started</h2>
         <p className="text-sm text-gray-600 mb-4">
           Get started with free automated testing as we take care of your complete software testing needs.
-        </p>
-        <Button onClick={() => navigate('/new-test')} variant="default">
+        </p>        <Button onClick={() => navigate('/new-test')} variant="default">
           Create a Test
         </Button>
       </section>
