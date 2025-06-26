@@ -20,12 +20,16 @@ const Sidebar = ({ onLogout }) => {
             <Home size={16} />
             <span>Home</span>
           </NavLink>
-        </div>
-
-        {/* Testing Section */}
+        </div>        {/* Testing Section */}
         <div>
           <p className="text-xs font-semibold mb-2 text-[#f3faf1]">TESTING</p>
           <div className="space-y-1">
+            <NavLink to="/files" className={getActiveClass}>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M20 6h-8l-2-2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2z"></path>
+              </svg>
+              <span>File Explorer</span>
+            </NavLink>
             <NavLink to="/new-test" className={getActiveClass}>
               <PlusCircle size={16} />
               <span>New Test</span>

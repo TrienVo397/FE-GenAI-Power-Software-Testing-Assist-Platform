@@ -12,6 +12,7 @@ import ProfilePage from "../pages/ProfilePage";
 import LoginPage from "../pages/LoginPage.jsx";
 import SignUpPage from "../pages/SignUpPage.jsx";
 import ProjectsPage from "../pages/ProjectsPage.jsx";
+import FileExplorerPage from "../pages/FileExplorerPage.jsx";
 
 const RouteConfig = () => {
   const [authenticated, setAuthenticated] = useState(isAuthenticated());
@@ -95,9 +96,10 @@ const RouteConfig = () => {
             </>
           ) : (
             <>
-              {/* ✅ PROJECT SELECTED */}
-              <Route element={<AppLayout onLogout={handleLogout} />}>
+              {/* ✅ PROJECT SELECTED */}              <Route element={<AppLayout onLogout={handleLogout} />}>
                 <Route index element={<HomePage />} />
+                <Route path="/files" element={<FileExplorerPage />} />
+                <Route path="/files/:projectId" element={<FileExplorerPage />} />
                 <Route path="dashboard" element={<HomePage />} />
                 <Route path="new-test" element={<NewTestPage />} />
                 <Route path="all-tests" element={<AllTestsPage />} />
