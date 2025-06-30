@@ -12,7 +12,22 @@ import _ from 'lodash';
 export const getProjects = async (skip = 0, limit = 100) => {
   try {
     const response = await get(`${PROJECT_SERVICE_URL}?skip=${skip}&limit=${limit}`);
-    return response.data;
+    
+    // Process each project to extract the version information
+    const projects = _.map(response.data, project => {
+      // Add a current_version_label property if it doesn't exist
+      if (project.current_version && !project.current_version_label) {
+        // Try to get version label from related data or use a default
+        project.current_version_label = _.get(
+          project, 
+          'current_version_label', 
+          _.get(project, 'version_info.version_label', 'v0')
+        );
+      }
+      return project;
+    });
+    
+    return projects;
   } catch (error) {
     console.error('Error fetching projects:', error);
     throw error;
@@ -61,6 +76,21 @@ export const deleteProject = async (projectId) => {
     return response.data;
   } catch (error) {
     console.error('Error deleting project:', error);
+    throw error;
+  }
+};
+
+/**
+ * Get project version details
+ * @param {string} projectId - The ID of the project
+ * @returns {Promise} Promise with the project version data
+ */
+export const getProjectVersion = async (projectId) => {
+  try {
+    const response = await get(`${PROJECT_SERVICE_URL}/${projectId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching project version:', error);
     throw error;
   }
 };

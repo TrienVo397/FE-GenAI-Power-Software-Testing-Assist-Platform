@@ -16,7 +16,7 @@ const FileExplorerPage = () => {
 
   useEffect(() => {
     // If projectId not available in URL params, try to get from localStorage
-    const storedProjectId = projectId || localStorage.getItem("mockProject");
+    const storedProjectId = projectId || localStorage.getItem("projectInfo");
     
     if (storedProjectId) {
       // Project ID might be stored directly as a string or as part of a JSON object

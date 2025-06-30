@@ -12,7 +12,8 @@ import ProjectTopActions from "../components/project/ProjectTopActions";
 import { createProject } from "../services/projectService";
 import _ from "lodash";
 
-const ProjectsPage = ({ onProjectSelect }) => {  const [isDialogOpen, setIsDialogOpen] = useState(false);
+const ProjectsPage = ({ onProjectSelect }) => {  
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const sectionRef = useRef();
   
   // Handle project selection and navigation  // Empty line (removing the unused function)
@@ -35,16 +36,24 @@ const ProjectsPage = ({ onProjectSelect }) => {  const [isDialogOpen, setIsDialo
           <CardTitle>Project Management</CardTitle>
           <ProjectTopActions onAddClick={() => setIsDialogOpen(true)} />
         </div>
-      </CardHeader>      <CardContent>
+      </CardHeader>      
+      <CardContent>
         <ProjectListSection 
-          ref={sectionRef}          onProjectSelect={(project) => {
+          ref={sectionRef}          
+          onProjectSelect={(project) => {
             // Log project selection
             console.log("Project selected in ProjectsPage:", project);
             
-            // Store project ID and directly navigate
+            // Store project data including ID and version information
             const projectId = _.get(project, 'id', '');
-            localStorage.setItem("mockProject", projectId);
-            console.log("Set localStorage mockProject to:", projectId);
+            const projectInfo = {
+              id: projectId,
+              name: _.get(project, 'name', 'Unnamed Project'),
+              version: _.get(project, 'current_version_label', 'v0')
+            };
+            
+            localStorage.setItem("projectInfo", JSON.stringify(projectInfo));
+            console.log("Set localStorage projectInfo to:", projectInfo);
             
             // Force navigation after a brief delay to ensure localStorage is set
             _.delay(() => {
@@ -54,7 +63,7 @@ const ProjectsPage = ({ onProjectSelect }) => {  const [isDialogOpen, setIsDialo
             
             // Also call parent handler for state updates
             if (onProjectSelect) {
-              onProjectSelect(project);
+              onProjectSelect(projectInfo);
             }
           }}
         />

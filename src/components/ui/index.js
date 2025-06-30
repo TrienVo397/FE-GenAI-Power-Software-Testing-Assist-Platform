@@ -5,3 +5,4 @@ export { default as Divider } from "./Divider";
 export { default as UploadCard } from "./UploadFile.jsx";
 export { default as SelectField } from "./SelectField";
 export { default as FilterDropdown} from "./FilterDropdown";
+export { default as Card } from "./Card";

@@ -13,25 +13,27 @@ import LoginPage from "../pages/LoginPage.jsx";
 import SignUpPage from "../pages/SignUpPage.jsx";
 import ProjectsPage from "../pages/ProjectsPage.jsx";
 import FileExplorerPage from "../pages/FileExplorerPage.jsx";
+import ProjectSettingsPage from "../pages/ProjectSettingsPage.jsx";
+import ProjectArtifactsPage from "../pages/ProjectArtifactsPage.jsx";
 
 const RouteConfig = () => {
   const [authenticated, setAuthenticated] = useState(isAuthenticated());
   
   // Handle both string ID and JSON object formats for backward compatibility
   const initializeSelectedProject = () => {
-    const storedProject = localStorage.getItem("mockProject");
+    const storedProject = localStorage.getItem("projectInfo");
     if (!storedProject) return null;
     
     // Use lodash's attempt to safely try parsing JSON
     const parsed = _.attempt(JSON.parse, storedProject);
     
-    // If parsing succeeded and it's an object with an id property, use that
+    // If parsing succeeded and it's an object with an id property, return the full object
     if (!_.isError(parsed) && _.has(parsed, 'id')) {
-      return parsed.id;
+      return parsed;
     }
     
-    // Otherwise, return the original string or the parsed value
-    return _.isError(parsed) ? storedProject : parsed;
+    // For backward compatibility, if it's just a string ID, create a minimal object
+    return _.isError(parsed) ? { id: storedProject } : { id: parsed };
   };
   
   const [selectedProject, setSelectedProject] = useState(initializeSelectedProject());
@@ -58,16 +60,14 @@ const RouteConfig = () => {
     setAuthenticated(false);
     setSelectedProject(null);
     navigate("/login");
-  };  // Handle project selection - extract ID from project data
+  };  
+  
+  // Handle project selection
   const handleProjectSelect = (project) => {
     console.log("Project selected:", project); // Debug log
     
-    // Get project ID directly from the localStorage
-    const storedProjectId = localStorage.getItem("mockProject");
-    console.log("Project ID from localStorage:", storedProjectId);
-    
-    // Update the selected project state
-    setSelectedProject(storedProjectId);
+    // Update the selected project state with the full project object
+    setSelectedProject(project);
     
     // Redirect to homepage/dashboard after selection
     console.log("Navigating to homepage");
@@ -96,14 +96,20 @@ const RouteConfig = () => {
             </>
           ) : (
             <>
-              {/* ✅ PROJECT SELECTED */}              <Route element={<AppLayout onLogout={handleLogout} />}>
+              {/* ✅ PROJECT SELECTED */}              
+              <Route element={<AppLayout onLogout={handleLogout} projectInfo={selectedProject} />}>
                 <Route index element={<HomePage />} />
                 <Route path="/files" element={<FileExplorerPage />} />
                 <Route path="/files/:projectId" element={<FileExplorerPage />} />
                 <Route path="dashboard" element={<HomePage />} />
                 <Route path="new-test" element={<NewTestPage />} />
                 <Route path="all-tests" element={<AllTestsPage />} />
+                <Route path="project-settings" element={<ProjectSettingsPage />} />
                 <Route path="profile" element={<ProfilePage />} />
+                <Route path="settings" element={<ProjectSettingsPage />} />
+                <Route path="artifacts" element={<ProjectArtifactsPage />} />
+                <Route path="artifacts/:projectId" element={<ProjectArtifactsPage />} />
+                <Route path="artifacts" element={<ProjectArtifactsPage />} />
               </Route>
 
               {/* 👈 Allow visiting /projects again even after selecting */}

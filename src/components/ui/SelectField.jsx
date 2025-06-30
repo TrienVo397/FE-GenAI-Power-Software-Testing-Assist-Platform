@@ -7,6 +7,7 @@ import {
 } from "./DropdownMenu";
 import { ChevronDown, Search } from "lucide-react";
 import clsx from "clsx";
+import _ from "lodash";
 
 export default function SelectField({
   id,
@@ -20,17 +21,18 @@ export default function SelectField({
   className = "",
   isInvalid = false,
   helperText = "",
+  disabled = false,
 }) {
   const [query, setQuery] = useState("");
 
   const filtered = filterable
-    ? items.filter((i) =>
-        i.label.toLowerCase().includes(query.toLowerCase())
+    ? _.filter(items, item => 
+        _.includes(_.toLower(item.label), _.toLower(query))
       )
     : items;
 
-  const selectedLabel =
-    items.find((i) => i.value === value)?.label || placeholder;
+  const selectedItem = _.find(items, item => item.value === value);
+  const selectedLabel = selectedItem ? selectedItem.label : placeholder;
 
   return (
     <div className="relative overflow-visible space-y-1">
@@ -43,59 +45,63 @@ export default function SelectField({
         </label>
       )}
       <DropdownMenu>
-        <DropdownMenuTrigger asChild>
+        <DropdownMenuTrigger asChild disabled={disabled}>
           <button
             id={id}
+            disabled={disabled}
             className={clsx(
-              "mt-1 w-full rounded-md border px-3 py-2 text-left text-sm text-gray-800 flex justify-between items-center focus:outline-none focus:ring-2",
+              "mt-1 w-full rounded-md border px-3 py-2 text-left text-sm flex justify-between items-center focus:outline-none focus:ring-2",
               isInvalid
                 ? "border-red-500 focus:ring-red-200 focus:border-red-500"
-                : "border-gray-300 bg-white focus:ring-blue-200 focus:border-blue-500",
+                : disabled 
+                  ? "border-gray-300 bg-gray-100 text-gray-500 cursor-not-allowed" 
+                  : "border-gray-300 bg-white text-gray-800 focus:ring-blue-200 focus:border-blue-500",
               className
             )}
           >
             <span>{selectedLabel}</span>
-            <ChevronDown className="h-4 w-4 text-gray-500" />
+            <ChevronDown className={clsx("h-4 w-4", disabled ? "text-gray-400" : "text-gray-500")} />
           </button>
         </DropdownMenuTrigger>
 
-        {/* menu is absolutely positioned and can overflow */}
-        <DropdownMenuContent className="absolute z-50 mt-1 w-full max-h-80 overflow-auto bg-white border border-gray-200 rounded-md shadow-lg">
-          {filterable && (
-            <div className="relative px-3 py-2">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-              <input
-                type="text"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder={searchPlaceholder}
-                className="w-full pl-10 pr-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-1 focus:border-blue-300"
-              />
-            </div>
-          )}
-
-          <div className="max-h-60 overflow-auto">
-            {filtered.map((i) => (
-              <DropdownMenuItem
-                key={i.value}
-                onClick={() => {
-                  onChange(i.value);
-                  setQuery("");
-                }}
-                className={clsx(
-                  value === i.value && "bg-[#1e325a] text-white"
-                )}
-              >
-                {i.label}
-              </DropdownMenuItem>
-            ))}
-            {!filtered.length && (
-              <div className="px-4 py-2 text-sm text-gray-500">
-                No results
+        {!disabled && (
+          <DropdownMenuContent className="absolute z-50 mt-1 w-full max-h-80 overflow-auto bg-white border border-gray-200 rounded-md shadow-lg">
+            {filterable && (
+              <div className="relative px-3 py-2">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input
+                  type="text"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder={searchPlaceholder}
+                  className="w-full pl-10 pr-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-1 focus:border-blue-300"
+                />
               </div>
             )}
-          </div>
-        </DropdownMenuContent>
+
+            <div className="max-h-60 overflow-auto">
+              {filtered.map((item) => (
+                <DropdownMenuItem
+                  key={item.value}
+                  onClick={() => {
+                    onChange(item.value);
+                    setQuery("");
+                  }}
+                  className={clsx(
+                    value === item.value && "bg-[#1e325a] text-white"
+                  )}
+                >
+                  {item.label}
+                </DropdownMenuItem>
+              ))}
+              {!filtered.length && (
+                <div className="px-4 py-2 text-sm text-gray-500">
+                  No results
+                </div>
+              )}
+            </div>
+          </DropdownMenuContent>
+        )}
       </DropdownMenu>
       {isInvalid && helperText && (
         <p className="mt-1 text-sm text-red-500">{helperText}</p>

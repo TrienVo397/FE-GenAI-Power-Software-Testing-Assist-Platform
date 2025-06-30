@@ -1,4 +1,3 @@
-
 export function Card({ children, className = "", ...props }) {
   return (
     <div
@@ -61,3 +60,5 @@ export function CardFooter({ children, className = "", ...props }) {
     </div>
   );
 };
+
+export default Card;

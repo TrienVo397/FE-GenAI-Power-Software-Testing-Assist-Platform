@@ -8,6 +8,7 @@ import {
   TableCell,
 } from "../ui/Table";
 import { Trash2, Edit2, EllipsisIcon } from "lucide-react";
+import _ from "lodash";
 
 const ProjectTable = ({ projects, onEdit, onDelete, onSelect }) => {
   const [openMenuId, setOpenMenuId] = useState(null);
@@ -26,21 +27,34 @@ const ProjectTable = ({ projects, onEdit, onDelete, onSelect }) => {
 
   return (
     <Table className="overflow-x-hidden">
-      {/* <TableHeader>
+      <TableHeader>
         <TableRow>
           <TableHead>Project Name</TableHead>
+          <TableHead>Version</TableHead>
           <TableHead className="w-12">Actions</TableHead>
         </TableRow>
-      </TableHeader> */}
+      </TableHeader>
       <TableBody>
         {projects.map((project) => (
-          <TableRow key={project.id} className="cursor-pointer text-blue-600 hover:bg-blue-100 transition duration-200 ease-in-out">            <TableCell
-              className="cursor-pointer text-black font-medium rounded-l-lg"
+          <TableRow key={project.id} className="cursor-pointer text-blue-600 hover:bg-blue-100 transition duration-200 ease-in-out">
+            <TableCell
+              className="cursor-pointer text-black font-medium"
               onClick={() => {
                 onSelect?.(project);
               }}
             >
               {project.name}
+            </TableCell>
+            
+            <TableCell
+              className="cursor-pointer"
+              onClick={() => {
+                onSelect?.(project);
+              }}
+            >
+              <span className="bg-blue-100 text-xs font-semibold rounded-full px-2 py-1 text-blue-800">
+                {_.get(project, 'current_version_label', 'v0')}
+              </span>
             </TableCell>
 
             <TableCell className="relative w-12 rounded-r-lg">

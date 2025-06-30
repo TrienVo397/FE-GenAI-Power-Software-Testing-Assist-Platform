@@ -1,12 +1,11 @@
 import React, {
-  createContext,
   useContext,
   useState,
   useRef,
   useEffect,
 } from "react";
-
-export const DropdownMenuContext = createContext(null);
+import _ from "lodash";
+import DropdownMenuContext from "./DropdownMenuContext";
 
 export function DropdownMenu({ children, ...props }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -19,10 +18,14 @@ export function DropdownMenu({ children, ...props }) {
   );
 };
 
-export function DropdownMenuTrigger({ asChild = false, children, ...props }) {
+export function DropdownMenuTrigger({ asChild = false, children, disabled = false, ...props }) {
   const { isOpen, setIsOpen } = useContext(DropdownMenuContext);
+  
   const toggle = (e) => {
     e.preventDefault();
+    if (disabled) {
+      return;
+    }
     setIsOpen(!isOpen);
     props.onClick?.(e);
   };
@@ -32,6 +35,7 @@ export function DropdownMenuTrigger({ asChild = false, children, ...props }) {
       "aria-expanded": isOpen,
       "data-state": isOpen ? "open" : "closed",
       onClick: toggle,
+      disabled,
       ...props,
     });
   }
@@ -41,6 +45,7 @@ export function DropdownMenuTrigger({ asChild = false, children, ...props }) {
       aria-expanded={isOpen}
       data-state={isOpen ? "open" : "closed"}
       onClick={toggle}
+      disabled={disabled}
       {...props}
     >
       {children}

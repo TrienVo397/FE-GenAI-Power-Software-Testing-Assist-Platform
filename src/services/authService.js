@@ -85,7 +85,7 @@ export const logout = async () => {
   // Always clear local storage
   localStorage.removeItem(TOKEN_KEY);
   localStorage.removeItem(USER_INFO_KEY);
-  localStorage.removeItem("mockProject"); // Remove existing mock project as well
+  localStorage.removeItem("projectInfo"); // Remove existing mock project as well
   
   return { success: true };
 };
