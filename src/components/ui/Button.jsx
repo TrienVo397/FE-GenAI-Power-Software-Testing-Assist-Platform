@@ -54,9 +54,8 @@ export function Button({
       onClick={onClick}
       {...props}
     >
-      {Icon && <Icon className="w-4 h-4 lg:mr-2" />}{" "}
-      {/* margin with label on large screen */}
-      <span className="hidden sm:inline">{label || children}</span>
+      {Icon && <Icon className="w-4 h-4 mr-2" />}
+      <span>{label || children}</span>
     </button>
   );
 }

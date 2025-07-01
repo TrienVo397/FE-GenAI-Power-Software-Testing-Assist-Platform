@@ -50,3 +50,44 @@ export const getArtifactFileContent = async (projectId, filePath) => {
     throw error;
   }
 };
+
+/**
+ * Fetches the content of a project artifact file as JSON (for editing)
+ * @param {string|number} projectId - The ID of the project
+ * @param {string} filePath - The file path of the artifact
+ * @returns {Promise} Promise with the artifact file content as JSON
+ */
+export const getArtifactFileContentAsJson = async (projectId, filePath) => {
+  try {
+    // Ensure filePath is properly encoded for URL use
+    const encodedFilePath = encodeURIComponent(filePath);
+    const response = await get(`${API_SERVICE_URL}/projects/${projectId}/files/${encodedFilePath}?as_json=true`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching artifact file content as JSON:', error);
+    throw error;
+  }
+};
+
+/**
+ * Updates the content of a project artifact file
+ * @param {string|number} projectId - The ID of the project
+ * @param {string} filePath - The file path of the artifact
+ * @param {string} content - The new content
+ * @param {string} description - Optional description of changes
+ * @returns {Promise} Promise with the update result
+ */
+export const updateArtifactFileContent = async (projectId, filePath, content, description = '') => {
+  try {
+    const { put } = await import('../configs/RequestConfig');
+    const encodedFilePath = encodeURIComponent(filePath);
+    const response = await put(`${API_SERVICE_URL}/projects/${projectId}/files/${encodedFilePath}`, {
+      content,
+      description
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error updating artifact file content:', error);
+    throw error;
+  }
+};

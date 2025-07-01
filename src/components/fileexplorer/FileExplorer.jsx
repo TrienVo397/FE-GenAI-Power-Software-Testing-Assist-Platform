@@ -6,13 +6,17 @@ import FileContextMenu from './FileContextMenu';
 import FileCreateDialog from './FileCreateDialog';
 import FileUploadDialog from './FileUploadDialog';
 import FileViewerDialog from './FileViewerDialog';
+import FileEditorDialog from './FileEditorDialog';
 import { BASE_URL } from '../../configs/UrlConfig';
 import { 
   listFiles, 
   getFileContent, 
+  getFileContentAsJson,
   uploadFile, 
   deleteFile, 
-  createDirectory 
+  createDirectory,
+  updateFileContent,
+  isEditableFile
 } from '../../services/fileExplorerService';
 
 const FileExplorer = ({ projectId }) => {
@@ -34,6 +38,13 @@ const FileExplorer = ({ projectId }) => {
   const [newFileDialog, setNewFileDialog] = useState(false);
   const [uploadDialog, setUploadDialog] = useState(false);
   const [viewerDialog, setViewerDialog] = useState({
+    open: false,
+    file: null,
+    content: null,
+  });
+  
+  // File editor dialog state
+  const [editorDialog, setEditorDialog] = useState({
     open: false,
     file: null,
     content: null,
@@ -323,8 +334,67 @@ const FileExplorer = ({ projectId }) => {
     }
   };
   
+  // Handle file editing
+  const handleEditFile = async (file) => {
+    if (!file || !isEditableFile(file.name)) {
+      setError(`File type '${file.name}' is not supported for editing`);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const fileData = await getFileContentAsJson(projectId, file.path);
+      setEditorDialog({
+        open: true,
+        file,
+        content: fileData.content
+      });
+      
+      // Close viewer dialog if open
+      setViewerDialog({
+        open: false,
+        file: null,
+        content: null
+      });
+    } catch (err) {
+      setError(`Failed to load file for editing: ${file.name}`);
+      console.error('Error loading file for editing:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSaveFile = async (content, description) => {
+    if (!editorDialog.file) return;
+
+    try {
+      setLoading(true);
+      await updateFileContent(projectId, editorDialog.file.path, content, description);
+      
+      // Close editor
+      setEditorDialog({
+        open: false,
+        file: null,
+        content: null
+      });
+
+      // Refresh file list to update modification times
+      fetchFiles();
+    } catch (err) {
+      setError(`Failed to save file: ${editorDialog.file.name}`);
+      console.error('Error saving file:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+  
   // Context menu actions
   const getContextMenuActions = (item) => {
+    // Return empty array if item is null
+    if (!item) {
+      return [];
+    }
+
     // Common actions
     const actions = [
       { 
@@ -360,7 +430,7 @@ const FileExplorer = ({ projectId }) => {
         ...actions
       ];
     } else {
-      return [
+      const fileActions = [
         { 
           label: 'Open', 
           icon: '📄', 
@@ -370,8 +440,25 @@ const FileExplorer = ({ projectId }) => {
           label: 'Download', 
           icon: '📥', 
           onClick: (item) => handleDownloadFile(item) 
-        },
-        ...actions
+        }
+      ];
+
+      // Add edit option for editable files (with null check)
+      if (item?.name && isEditableFile(item.name)) {
+        fileActions.splice(1, 0, {
+          label: 'Edit',
+          icon: '✏️',
+          onClick: (item) => handleEditFile(item)
+        });
+      }
+
+      return [
+        ...fileActions,
+        { 
+          label: 'Delete', 
+          icon: '🗑️', 
+          onClick: (item) => handleDeleteFile(item) 
+        }
       ];
     }
   };
@@ -543,6 +630,34 @@ const FileExplorer = ({ projectId }) => {
         })}
         file={viewerDialog.file}
         content={viewerDialog.content}
+        onEdit={handleEditFile}
+      />
+
+      {/* File Editor Dialog */}
+      <FileEditorDialog
+        open={editorDialog.open}
+        onClose={() => setEditorDialog({
+          open: false,
+          file: null,
+          content: null
+        })}
+        onSave={handleSaveFile}
+        file={editorDialog.file}
+        content={editorDialog.content}
+        loading={loading}
+      />
+      
+      {/* File Editor Dialog */}
+      <FileEditorDialog
+        open={editorDialog.open}
+        onClose={() => setEditorDialog({
+          open: false,
+          file: null,
+          content: null
+        })}
+        file={editorDialog.file}
+        content={editorDialog.content}
+        onSave={handleSaveFile}
       />
     </div>
   );

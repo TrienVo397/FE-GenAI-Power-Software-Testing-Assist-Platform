@@ -1,8 +1,14 @@
 // filepath: src/pages/ProjectArtifactsPage.jsx
 import { useState, useEffect } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
-import { getProjectArtifacts, getArtifactFileContent } from '../services/projectArtifactsService';
-import { Card } from '../components/ui';
+import { 
+  getProjectArtifacts, 
+  getArtifactFileContent,
+  getArtifactFileContentAsJson,
+  updateArtifactFileContent
+} from '../services/projectArtifactsService';
+import { Card, Button, LoadingButton } from '../components/ui';
+import FileEditorDialog from '../components/fileexplorer/FileEditorDialog';
 import _ from 'lodash';
 import ReactMarkdown from 'react-markdown';
 
@@ -13,6 +19,13 @@ const ProjectArtifactsPage = () => {
   const [loading, setLoading] = useState(true);
   const [contentLoading, setContentLoading] = useState(false);
   const [error, setError] = useState(null);
+  
+  // Editor dialog state
+  const [editorDialog, setEditorDialog] = useState({
+    open: false,
+    file: null,
+    content: null,
+  });
   
   // Get projectId from URL params or from localStorage
   const { projectId } = useParams();
@@ -109,6 +122,85 @@ const ProjectArtifactsPage = () => {
     return 'Document';
   };
   
+  // Check if a file is editable
+  const isEditableFile = (filename) => {
+    const editableExtensions = [
+      'md', 'yml', 'yaml', 'txt', 'json', 'csv', 'html', 'js', 'py', 'xml'
+    ];
+    
+    const extension = _.toLower(_.last(filename.split('.')));
+    return _.includes(editableExtensions, extension);
+  };
+
+  // Handle editing an artifact
+  const handleEditArtifact = async (artifact) => {
+    if (!artifact || !artifact.file_path) return;
+
+    const filename = artifact.file_path.split('/').pop();
+    if (!isEditableFile(filename)) {
+      setError(`File type '${filename}' is not supported for editing`);
+      return;
+    }
+
+    try {
+      setContentLoading(true);
+      const currentProjectId = getCurrentProjectId();
+      
+      if (!currentProjectId) {
+        throw new Error('No project selected');
+      }
+      
+      const fileData = await getArtifactFileContentAsJson(currentProjectId, artifact.file_path);
+      setEditorDialog({
+        open: true,
+        file: {
+          name: filename,
+          path: artifact.file_path,
+          ...artifact
+        },
+        content: fileData.content
+      });
+    } catch (err) {
+      console.error('Error loading artifact for editing:', err);
+      setError('Failed to load artifact for editing: ' + (err.message || 'Unknown error'));
+    } finally {
+      setContentLoading(false);
+    }
+  };
+
+  // Handle saving an artifact
+  const handleSaveArtifact = async (content, description) => {
+    if (!editorDialog.file) return;
+
+    try {
+      setContentLoading(true);
+      const currentProjectId = getCurrentProjectId();
+      
+      if (!currentProjectId) {
+        throw new Error('No project selected');
+      }
+
+      await updateArtifactFileContent(currentProjectId, editorDialog.file.path, content, description);
+      
+      // Close editor
+      setEditorDialog({
+        open: false,
+        file: null,
+        content: null
+      });
+
+      // Refresh content if this is the currently selected artifact
+      if (selectedArtifact && selectedArtifact.file_path === editorDialog.file.path) {
+        await fetchArtifactContent(selectedArtifact);
+      }
+    } catch (err) {
+      console.error('Error saving artifact:', err);
+      setError('Failed to save artifact: ' + (err.message || 'Unknown error'));
+    } finally {
+      setContentLoading(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full">
@@ -171,22 +263,37 @@ const ProjectArtifactsPage = () => {
             {selectedArtifact ? (
               <Card className="p-6">
                 <div className="mb-4 pb-4 border-b">
-                  <h2 className="text-xl font-bold">
-                    {_.get(selectedArtifact, 'file_path', '').split('/').pop() || 'Untitled Document'}
-                  </h2>
-                  <div className="flex mt-2">
-                    <span className="text-xs bg-blue-100 text-blue-800 rounded-full px-2 py-1 mr-2">
-                      {getArtifactType(selectedArtifact)}
-                    </span>
-                    {selectedArtifact.created_at && (
-                      <span className="text-xs text-gray-500">
-                        Created: {new Date(selectedArtifact.created_at).toLocaleDateString()}
-                      </span>
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h2 className="text-xl font-bold">
+                        {_.get(selectedArtifact, 'file_path', '').split('/').pop() || 'Untitled Document'}
+                      </h2>
+                      <div className="flex mt-2">
+                        <span className="text-xs bg-blue-100 text-blue-800 rounded-full px-2 py-1 mr-2">
+                          {getArtifactType(selectedArtifact)}
+                        </span>
+                        {selectedArtifact.created_at && (
+                          <span className="text-xs text-gray-500">
+                            Created: {new Date(selectedArtifact.created_at).toLocaleDateString()}
+                          </span>
+                        )}
+                      </div>
+                      {selectedArtifact.note && (
+                        <p className="text-sm text-gray-600 mt-2">{selectedArtifact.note}</p>
+                      )}
+                    </div>
+                    
+                    {/* Edit button */}
+                    {isEditableFile(_.get(selectedArtifact, 'file_path', '').split('/').pop() || '') && (
+                      <Button
+                        onClick={() => handleEditArtifact(selectedArtifact)}
+                        disabled={contentLoading}
+                        className="ml-4"
+                      >
+                        ✏️ Edit
+                      </Button>
                     )}
                   </div>
-                  {selectedArtifact.note && (
-                    <p className="text-sm text-gray-600 mt-2">{selectedArtifact.note}</p>
-                  )}
                 </div>
                 
                 <div className="prose max-w-none">
@@ -215,6 +322,18 @@ const ProjectArtifactsPage = () => {
             )}
           </div>
         </div>
+      )}
+
+      {/* File editor dialog */}
+      {editorDialog.open && (
+        <FileEditorDialog
+          open={editorDialog.open}
+          file={editorDialog.file}
+          content={editorDialog.content}
+          onClose={() => setEditorDialog({ ...editorDialog, open: false })}
+          onSave={handleSaveArtifact}
+          loading={contentLoading}
+        />
       )}
     </div>
   );

@@ -26,7 +26,8 @@ const FileViewerDialog = ({
   open, 
   onClose, 
   file,
-  content 
+  content,
+  onEdit
 }) => {
   const [viewMode, setViewMode] = useState('text'); // 'text', 'image', 'binary'
   
@@ -42,6 +43,9 @@ const FileViewerDialog = ({
     }
   }, [file]);
   
+  // Determine if file is editable
+  const isEditable = file && isTextFile(file.name) && ['md', 'yml', 'yaml', 'txt', 'json', 'csv', 'html', 'js', 'py', 'xml'].includes(_.toLower(_.last(file.name.split('.'))));
+
   if (!file) return null;
   return (
     <SimpleDialog
@@ -49,9 +53,11 @@ const FileViewerDialog = ({
       onClose={onClose}
       title={`File: ${file.name}`}
       size="lg"
-      confirmLabel="Close"
-      onConfirm={onClose}
-      showCancel={false}
+      confirmLabel={isEditable ? "Edit" : "Close"}
+      onConfirm={isEditable && onEdit ? () => onEdit(file) : onClose}
+      showCancel={isEditable}
+      cancelLabel={isEditable ? "Close" : undefined}
+      onCancel={isEditable ? onClose : undefined}
     >
       <div className="w-full">
         {viewMode === 'text' && (

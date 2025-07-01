@@ -1,6 +1,6 @@
 // filepath: src/services/fileExplorerService.js
 import { BASE_URL } from '../configs/UrlConfig';
-import { get, post, del } from '../configs/RequestConfig';
+import { get, post, del, put } from '../configs/RequestConfig';
 import axios from 'axios';
 import _ from 'lodash';
 
@@ -157,4 +157,56 @@ export const createDirectory = async (projectId, directoryPath) => {
     console.error('Error creating directory:', error);
     throw error;
   }
+};
+
+/**
+ * Update file content (for text files)
+ * @param {string} projectId - The ID of the project
+ * @param {string} filePath - Path to the file to update
+ * @param {string} content - New file content
+ * @param {string} description - Optional description of the changes
+ * @returns {Promise} Promise with the update result
+ */
+export const updateFileContent = async (projectId, filePath, content, description = '') => {
+  try {
+    const response = await put(`${FILE_API_URL}/${projectId}/files/${filePath}`, {
+      content,
+      description
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error updating file content:', error);
+    throw error;
+  }
+};
+
+/**
+ * Get file content as JSON (for text files)
+ * @param {string} projectId - The ID of the project
+ * @param {string} filePath - Path to the file
+ * @returns {Promise} Promise with the file content as JSON
+ */
+export const getFileContentAsJson = async (projectId, filePath) => {
+  try {
+    const url = `${FILE_API_URL}/${projectId}/files/${encodeURIComponent(filePath)}?as_json=true`;
+    const response = await get(url);
+    return response.data;
+  } catch (error) {
+    console.error('Error getting file content as JSON:', error);
+    throw error;
+  }
+};
+
+/**
+ * Check if a file type is supported for text editing
+ * @param {string} filename - The filename to check
+ * @returns {boolean} Whether the file type is supported for editing
+ */
+export const isEditableFile = (filename) => {
+  const editableExtensions = [
+    'md', 'yml', 'yaml', 'txt', 'json', 'csv', 'html', 'js', 'py', 'xml'
+  ];
+  
+  const extension = _.toLower(_.last(filename.split('.')));
+  return _.includes(editableExtensions, extension);
 };
