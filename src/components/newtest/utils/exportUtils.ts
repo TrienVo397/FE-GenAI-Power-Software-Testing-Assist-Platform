@@ -1,7 +1,16 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
-export const downloadCSV = (testCases, metadata) => {
+type TestCase = {
+  [key: string]: string;
+};
+
+interface Metadata {
+  testName: string;
+  testDescription: string;
+}
+
+export const downloadCSV = (testCases: TestCase[], metadata: Metadata): void => {
   const headers = [
     "Test ID",
     "Test Case Description",
@@ -26,7 +35,7 @@ export const downloadCSV = (testCases, metadata) => {
   link.click();
 };
 
-export const downloadPDF = (testCases, metadata) => {
+export const downloadPDF = (testCases: TestCase[], metadata: Metadata): void => {
   const doc = new jsPDF();
   doc.setFontSize(12);
   doc.text(`Test Name: ${metadata.testName}`, 14, 16);
