@@ -1,7 +1,20 @@
-import React from "react";
+import React, { ChangeEvent } from "react";
 import _ from "lodash";
 
-const ValidatedInputField = ({
+interface ValidatedInputFieldProps {
+  id: string;
+  label: string;
+  type?: string;
+  placeholder?: string;
+  value: string | number | boolean;
+  onChange: (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+  required?: boolean;
+  isInvalid?: boolean;
+  helperText?: string;
+  disabled?: boolean;
+}
+
+const ValidatedInputField: React.FC<ValidatedInputFieldProps> = ({
   id,
   label,
   type = "text",
@@ -26,7 +39,7 @@ const ValidatedInputField = ({
         {label}
         {required && <span className="text-red-500"> *</span>}
       </label>
-      
+
       {type === "textarea" ? (
         <textarea
           id={id}
@@ -52,7 +65,7 @@ const ValidatedInputField = ({
           className={commonClassNames}
         />
       )}
-      
+
       {isInvalid && helperText && (
         <p className="text-sm text-red-600">{helperText}</p>
       )}

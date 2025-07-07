@@ -1,6 +1,15 @@
 import React from "react";
 
-const Pagination = ({
+interface PaginationProps {
+  page: number;
+  setPage: React.Dispatch<React.SetStateAction<number>>;
+  totalPages: number;
+  totalItems: number;
+  pageSize: number;
+  itemLabel?: string;
+}
+
+const Pagination: React.FC<PaginationProps> = ({
   page,
   setPage,
   totalPages,

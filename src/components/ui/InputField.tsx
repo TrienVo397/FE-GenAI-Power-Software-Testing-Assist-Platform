@@ -1,6 +1,17 @@
-import React from "react";
+import React, { ChangeEvent } from "react";
 
-const InputField = ({
+interface InputFieldProps {
+  id: string;
+  name: string;
+  label: string;
+  type?: string;
+  placeholder?: string;
+  value: string;
+  onChange: (e: ChangeEvent<HTMLInputElement>) => void;
+  required?: boolean;
+}
+
+const InputField: React.FC<InputFieldProps> = ({
   id,
   name,
   label,

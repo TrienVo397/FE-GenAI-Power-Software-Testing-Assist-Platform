@@ -1,21 +1,37 @@
-import React, { useState } from "react";
+// filepath: src/components/ui/DropdownMenuWrapper.tsx
+import React, { useState } from 'react';
 import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
-} from "./DropdownMenu";
-import { ChevronDown, Search } from "lucide-react";
+} from './DropdownMenu';
+import { ChevronDown, Search } from 'lucide-react';
 
-export default function DropdownMenuWrapper({
+export interface DropdownMenuWrapperProps<T extends string | number> {
+  /** Label shown when nothing is selected */
+  label: string;
+  /** List of items to choose from */
+  items: Array<{ label: string; value: T }>;
+  /** Currently selected value */
+  selected?: T;
+  /** Callback when an item is selected */
+  onSelect: (value: T) => void;
+  /** Alignment of the dropdown panel */
+  align?: 'start' | 'end';
+  /** Additional CSS classes applied to the trigger button */
+  className?: string;
+}
+
+export function DropdownMenuWrapper<T extends string | number>({
   label,
   items,
   selected,
   onSelect,
-  align = "start",
-  className = "w-full",
-}) {
-  const [query, setQuery] = useState("");
+  align = 'start',
+  className = 'w-full',
+}: DropdownMenuWrapperProps<T>) {
+  const [query, setQuery] = useState('');
   const filtered = items.filter((i) =>
     i.label.toLowerCase().includes(query.toLowerCase())
   );
@@ -45,7 +61,7 @@ export default function DropdownMenuWrapper({
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={`Search ${label.toLowerCase()}...`}
-              className="w-full pl-10 pr-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-1 focus:border-blue-300"
+              className="w-full pl-10 pr-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-300"
             />
           </div>
         </div>
@@ -55,20 +71,22 @@ export default function DropdownMenuWrapper({
           {filtered.length > 0 ? (
             filtered.map((item) => (
               <DropdownMenuItem
-                key={item.value}
+                key={String(item.value)}
                 onClick={() => onSelect(item.value)}
-                className={
-                  item.value === selected ? "bg-[#2c4270] text-white" : ""
-                }
+                className={item.value === selected ? 'bg-[#2c4270] text-white' : ''}
               >
                 {item.label}
               </DropdownMenuItem>
             ))
           ) : (
-            <div className="px-3 py-2 text-sm text-gray-500">No results</div>
+            <div className="px-3 py-2 text-sm text-gray-500">
+              No results
+            </div>
           )}
         </div>
       </DropdownMenuContent>
     </DropdownMenu>
   );
-};
+}
+
+export default DropdownMenuWrapper;

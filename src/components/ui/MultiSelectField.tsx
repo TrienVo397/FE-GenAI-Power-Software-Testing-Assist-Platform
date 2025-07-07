@@ -1,7 +1,22 @@
 import React from "react";
-import Select from "react-select";
+import Select, { MultiValue, Options } from "react-select";
 
-const MultiSelectField = ({
+interface OptionType {
+  label: string;
+  value: string | number;
+}
+
+interface MultiSelectFieldProps {
+  id: string;
+  label: string;
+  value: (string | number)[];
+  onChange: (selectedIds: (string | number)[]) => void;
+  options: Options<OptionType>;
+  error?: string;
+  placeholder?: string;
+}
+
+const MultiSelectField: React.FC<MultiSelectFieldProps> = ({
   id,
   label,
   value = [],
@@ -10,10 +25,9 @@ const MultiSelectField = ({
   error,
   placeholder = "Select stations...",
 }) => {
-  // Convert value array of IDs to react-select format
   const selectedOptions = options.filter((opt) => value.includes(opt.value));
 
-  const handleChange = (selected) => {
+  const handleChange = (selected: MultiValue<OptionType>) => {
     const selectedIds = selected.map((item) => item.value);
     onChange(selectedIds);
   };
@@ -38,3 +52,4 @@ const MultiSelectField = ({
 };
 
 export default MultiSelectField;
+

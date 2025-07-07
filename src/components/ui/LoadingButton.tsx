@@ -1,7 +1,14 @@
-import React from "react";
-import Button from "./Button"; 
+import { ReactNode, ElementType } from "react";
+import Button, { ButtonProps } from "./Button";
 
-const LoadingButton = ({
+interface LoadingButtonProps extends Omit<ButtonProps, "icon"> {
+  isLoading: boolean;
+  loadingText?: string;
+  icon?: ElementType; // 👈 phải là component constructor
+  label?: string;
+  children?: ReactNode;
+}
+const LoadingButton: React.FC<LoadingButtonProps> = ({
   isLoading,
   loadingText = "Loading...",
   icon,
@@ -41,7 +48,7 @@ const LoadingButton = ({
       icon={isLoading ? undefined : icon}
       label={isLoading ? undefined : label}
     >
-      {isLoading ? Spinner : null}
+      {isLoading ? Spinner : children}
     </Button>
   );
 };

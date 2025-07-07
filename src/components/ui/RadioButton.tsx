@@ -1,6 +1,13 @@
 import React from "react";
 
-export default function RadioButton({ id, label, checked, onSelect }) {
+interface RadioButtonProps {
+  id: string;
+  label: string;
+  checked: boolean;
+  onSelect: (e: React.ChangeEvent<HTMLInputElement>) => void;
+}
+
+const RadioButton: React.FC<RadioButtonProps> = ({ id, label, checked, onSelect }) => {
   return (
     <label htmlFor={id} className="flex items-center space-x-2 cursor-pointer">
       <div className="relative">
@@ -24,3 +31,5 @@ export default function RadioButton({ id, label, checked, onSelect }) {
     </label>
   );
 };
+
+export default RadioButton;

@@ -1,7 +1,11 @@
-// src/components/ui/Divider.jsx
-import React from "react";
+import React from 'react';
 
-const Divider = ({ text }) => {
+export interface DividerProps {
+  /** Optional text to display in the center of the divider */
+  text?: string;
+}
+
+export const Divider: React.FC<DividerProps> = ({ text }) => {
   if (!text) {
     return <div className="my-4 border-t border-gray-300" />;
   }
@@ -10,9 +14,7 @@ const Divider = ({ text }) => {
     <div className="relative my-4">
       <div className="flex items-center">
         <div className="flex-1 border-t border-gray-300" />
-        <span className="mx-2 bg-white px-2 text-sm text-gray-500">
-          {text}
-        </span>
+        <span className="mx-2 bg-white px-2 text-sm text-gray-500">{text}</span>
         <div className="flex-1 border-t border-gray-300" />
       </div>
     </div>

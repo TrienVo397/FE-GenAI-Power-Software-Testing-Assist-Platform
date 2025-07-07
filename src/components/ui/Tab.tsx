@@ -1,12 +1,17 @@
 import React from "react";
 
-/**
- * Reusable tab in-page component.
- * @param {Array} tabs - List of tab objects with `label` and `value`.
- * @param {string} activeTab - Currently selected tab value.
- * @param {function} onTabChange - Callback when a tab is selected.
- */
-const Tab = ({ tabs, activeTab, onTabChange }) => {
+export interface TabItem {
+  label: string;
+  value: string;
+}
+
+interface TabProps {
+  tabs: TabItem[];
+  activeTab: string;
+  onTabChange: (value: string) => void;
+}
+
+const Tab: React.FC<TabProps> = ({ tabs, activeTab, onTabChange }) => {
   return (
     <div className="flex gap-6 border-b border-gray-200 mb-6">
       {tabs.map((tab) => {

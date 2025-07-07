@@ -4,63 +4,83 @@ import SelectField from "./SelectField";
 import ValidatedInputField from "./ValidatedInputField";
 import MultiSelectField from "./MultiSelectField";
 
-/**
- * Reusable FormDialog
- * Props:
- *  - title: string
- *  - formSchema: field definitions (see usage)
- *  - initialFormData: prefill values
- *  - onSubmit: async (payload) => void
- *  - onClose: () => void
- *  - renderFieldOverride: optional map of key => custom render function
- *  - disableAutoClose: optional boolean to prevent closing on submit
- */
+interface FieldConfig {
+  label: string;
+  type?: string;
+  options?: { label: string; value: string }[];
+  validate?: (value: any) => string | null;
+  transform?: (value: any) => any;
+  defaultValue?: any;
+  maxSizeMB?: number;
+  placeholder?: string;
+}
 
-const FormDialog = ({
+interface FormDialogProps {
+  title: string;
+  formSchema: Record<string, FieldConfig>;
+  initialFormData?: Record<string, any>;
+  onSubmit: (payload: Record<string, any>) => Promise<void>;
+  onClose: () => void;
+  renderFieldOverride?: Record<
+    string,
+    (
+      key: string,
+      cfg: FieldConfig,
+      form: Record<string, any>,
+      setForm: React.Dispatch<React.SetStateAction<Record<string, any>>>
+    ) => React.ReactNode
+  >;
+  disableAutoClose?: boolean;
+}
+
+const FormDialog: React.FC<FormDialogProps> = ({
   title,
   formSchema,
   initialFormData = {},
   onSubmit,
   onClose,
   renderFieldOverride = {},
-  disableAutoClose = false, 
+  disableAutoClose = false,
 }) => {
-  const [form, setForm] = useState(() => {
-    const data = {};
+  const [form, setForm] = useState<Record<string, any>>(() => {
+    const data: Record<string, any> = {};
     Object.entries(formSchema).forEach(([key, cfg]) => {
-      data[key] = initialFormData[key] ?? cfg.defaultValue ?? (cfg.type === 'checkbox' ? false : '');
+      data[key] =
+        initialFormData[key] ??
+        cfg.defaultValue ??
+        (cfg.type === "checkbox" ? false : "");
     });
     return data;
   });
-  const [errors, setErrors] = useState({});
+
+  const [errors, setErrors] = useState<Record<string, string | null>>({});
   const [generalError, setGeneralError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleChange = (key, val) => {
-    setForm(prev => ({ ...prev, [key]: val }));
-    const err = formSchema[key].validate?.(val);
-    setErrors(prev => ({ ...prev, [key]: err }));
+  const handleChange = (key: string, val: any) => {
+    setForm((prev) => ({ ...prev, [key]: val }));
+    const err = formSchema[key].validate?.(val) ?? null;
+    setErrors((prev) => ({ ...prev, [key]: err }));
   };
 
-  const handleSubmit = async e => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setGeneralError("");
 
-    // validate all
-    const newErrs = {};
+    const newErrs: Record<string, string | null> = {};
     Object.entries(formSchema).forEach(([key, cfg]) => {
-      const err = cfg.validate?.(form[key]);
+      const err = cfg.validate?.(form[key]) ?? null;
       if (err) newErrs[key] = err;
     });
-    if (Object.keys(newErrs).length) {
+
+    if (Object.values(newErrs).some(Boolean)) {
       setErrors(newErrs);
-      // setGeneralError('Please fix the errors.');
       return;
     }
 
     setIsSubmitting(true);
     try {
-      const payload = {};
+      const payload: Record<string, any> = {};
       Object.entries(formSchema).forEach(([key, cfg]) => {
         payload[key] = cfg.transform ? cfg.transform(form[key]) : form[key];
       });
@@ -68,16 +88,19 @@ const FormDialog = ({
       if (!disableAutoClose) {
         onClose();
       }
-    } catch (err) {
-      setGeneralError(err.message || 'Submission failed.');
-      return;
+    } catch (err: any) {
+      setGeneralError(err?.message || "Submission failed.");
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+      role="dialog"
+      aria-modal="true"
+    >
       <div className="bg-white rounded-md shadow-lg max-w-2xl w-full p-6 overflow-y-auto max-h-[90vh]">
         <h2 className="text-2xl font-bold mb-4">{title}</h2>
         {generalError && <div className="mb-4 text-red-500">{generalError}</div>}
@@ -92,33 +115,35 @@ const FormDialog = ({
             }
 
             switch (cfg.type) {
-              case 'checkbox':
+              case "checkbox":
                 return (
                   <Checkbox
                     key={key}
                     label={cfg.label}
                     checked={form[key]}
-                    onChange={e => handleChange(key, e.target.checked)}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      handleChange(key, e.target.checked)
+                    }
                   />
                 );
-              case 'select':
+              case "select":
                 return (
                   <SelectField
                     key={key}
                     id={key}
                     label={cfg.label}
                     value={form[key]}
-                    onChange={val => handleChange(key, val)}
-                    items={cfg.options}
+                    onChange={(val: any) => handleChange(key, val)}
+                    items={cfg.options || []}
                   />
                 );
-              case 'upload':
+              case "upload":
                 return (
                   <UploadCard
                     key={key}
                     label={cfg.label}
                     maxSizeMB={cfg.maxSizeMB}
-                    onUpload={file => handleChange(key, file)}
+                    onUpload={(file: File) => handleChange(key, file)}
                   />
                 );
               case "multi-select":
@@ -128,9 +153,9 @@ const FormDialog = ({
                     id={key}
                     label={cfg.label}
                     value={form[key]}
-                    onChange={(val) => handleChange(key, val)}
-                    options={cfg.options}
-                    error={errors[key]}
+                    onChange={(val: string[]) => handleChange(key, val)}
+                    options={cfg.options || []}
+                    error={errors[key] || undefined}
                     placeholder={cfg.placeholder}
                   />
                 );
@@ -140,18 +165,29 @@ const FormDialog = ({
                     key={key}
                     id={key}
                     label={cfg.label}
-                    type={cfg.type || 'text'}
+                    type={cfg.type || "text"}
                     value={form[key]}
-                    onChange={e => handleChange(key, e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+                      handleChange(key, e.target.value)
+                    }
                     isInvalid={Boolean(errors[key])}
-                    helperText={errors[key]}
+                    helperText={errors[key] || ""}
                   />
                 );
             }
           })}
           <div className="flex justify-end gap-2 pt-4">
-            <Button type="button" variant="secondary" onClick={onClose} disabled={isSubmitting}>Cancel</Button>
-            <Button type="submit" disabled={isSubmitting}>{isSubmitting ? 'Saving...' : 'Save'}</Button>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={onClose}
+              disabled={isSubmitting}
+            >
+              Cancel
+            </Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Saving..." : "Save"}
+            </Button>
           </div>
         </form>
       </div>
