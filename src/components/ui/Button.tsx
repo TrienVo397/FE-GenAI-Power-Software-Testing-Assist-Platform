@@ -5,7 +5,9 @@ export type ButtonVariant =
   | "secondary"
   | "destructive"
   | "warning"
-  | "link";
+  | "outline"
+  | "link"
+  | "success";
 
 export type ButtonSize = "default" | "sm" | "lg" | "icon";
 
@@ -47,7 +49,9 @@ export const Button: React.FC<ButtonProps> = ({
     secondary: "bg-gray-200 text-black border border-gray-300 hover:bg-gray-100",
     destructive: "bg-red-600 text-white hover:bg-red-700",
     warning: "bg-yellow-400 text-black hover:bg-yellow-500",
+    outline: "border border-input hover:bg-gray-100 hover:text-black",
     link: "underline-offset-4 hover:underline text-primary",
+    success: "bg-green-600 text-white hover:bg-green-700",
   };
 
   const sizeStyles: Record<ButtonSize, string> = {
