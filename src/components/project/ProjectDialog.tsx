@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import FormDialog from "../ui/FormDialog";
-import { getDocumentVersionsByProject } from "../../services/documentVersionService";
+import { getDocumentVersionsByProject } from "@@/services/documentVersionService";
 import _ from "lodash";
 
 type Project = {

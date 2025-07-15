@@ -1,5 +1,5 @@
-import { TEST_CASE_SERVICE_URL } from "../../../configs/UrlConfig";
-import { sendHttpRequest } from "../../../configs/RequestConfig";
+import { TEST_CASE_SERVICE_URL } from "@@/configs/UrlConfig";
+import { sendHttpRequest } from "@@/configs/RequestConfig";
 
 export const generateTestCases = async (file: File): Promise<any> => {
   const formData = new FormData();

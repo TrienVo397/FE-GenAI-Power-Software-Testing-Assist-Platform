@@ -135,7 +135,6 @@ export async function sendHttpRequest(
 }
 
 // Helper functions for standard HTTP methods
-// Helper functions for standard HTTP methods
 export const get = async (
   url: string,
   customHeaders?: Record<string, string>

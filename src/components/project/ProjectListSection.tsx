@@ -10,7 +10,7 @@ import {
   getProjects,
   updateProject,
   deleteProject,
-} from "../../services/projectService";
+} from "@@/services/projectService";
 import _ from "lodash";
 
 // Define the shape of a Project
