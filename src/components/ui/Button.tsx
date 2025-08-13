@@ -74,17 +74,19 @@ export const Button: React.FC<ButtonProps> = ({
     .join(" ");
 
   return (
-    <button
-      type={type}
-      className={styles}
-      disabled={disabled}
-      onClick={onClick}
-      {...props}
-    >
-      {Icon && <Icon className="w-4 h-4 mr-2" />}
-      <span>{label || children}</span>
-    </button>
-  );
+  <button
+    type={type}
+    className={styles}
+    disabled={disabled}
+    onClick={onClick}
+    {...props}
+  >
+    <span className="flex items-center">
+      {Icon && <Icon className="w-4 h-4" />}
+      {label || children}
+    </span>
+  </button>
+);
 };
 
 export default Button;
